@@ -18,7 +18,17 @@ app.get("/" , (req,res)=>{
 app.use("/",interviewRouter)
 
 
-app.listen(PORT , ()=>{
-    console.log(`Interview-service Started on ${PORT}`)
-    connectDB()
-})
+const startServer = async () => {
+    try {
+        await connectDB();
+
+        app.listen(PORT, () => {
+            console.log(`Interview-service Started on ${PORT}`);
+        });
+    } catch (error) {
+        console.error("Failed to start Interview service:", error);
+        process.exit(1);
+    }
+};
+
+startServer();
