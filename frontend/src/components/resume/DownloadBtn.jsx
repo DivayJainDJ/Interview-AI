@@ -1,8 +1,7 @@
-import React from 'react'
 import { FiDownload } from 'react-icons/fi'
 import { useReactToPrint } from "react-to-print";
-import { useCoins } from '../../apis/user.api';
-function DownloadBtn({ docRef, user, setUser }) {
+import { spendCoins } from '../../apis/user.api';
+function DownloadBtn({ docRef, setUser }) {
 
     const handlePdf = useReactToPrint({
         contentRef: docRef,
@@ -12,7 +11,7 @@ function DownloadBtn({ docRef, user, setUser }) {
     const handleDownload = async () => {
         try {
             
-                const coinResponse = await useCoins({ coins: 10, action: "download-pdf" })
+                const coinResponse = await spendCoins({ coins: 10, action: "download-pdf" })
 
                 await handlePdf()
                 setUser((prev) => ({

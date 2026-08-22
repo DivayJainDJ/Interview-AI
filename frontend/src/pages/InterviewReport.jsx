@@ -1,9 +1,9 @@
-import React, { useEffect, useState } from 'react'
+import { useEffect, useState } from 'react'
 import Step3report from '../components/interview/Step3report'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getInterview } from '../apis/interview.api'
 
-function InterviewReport({user, setUser}) {
+function InterviewReport({ user, setUser }) {
   const {id} = useParams()
     const [loading , setLoading] = useState(true)
     const [report,setReport] = useState(null)

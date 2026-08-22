@@ -1,6 +1,5 @@
-import React from 'react'
-import { motion } from "motion/react"
 import { useState } from 'react'
+import { motion } from "motion/react"
 import { FiMenu, FiX } from 'react-icons/fi'
 import { GiTwoCoins } from 'react-icons/gi'
 import PricingCard from '../components/PricingCard'

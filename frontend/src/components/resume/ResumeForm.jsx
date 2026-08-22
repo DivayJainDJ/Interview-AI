@@ -1,4 +1,3 @@
-import React from 'react'
 import { FiPlus, FiTrash2 } from 'react-icons/fi'
 
 function Input({label, value, onChange, placeholder, type = "text"}){

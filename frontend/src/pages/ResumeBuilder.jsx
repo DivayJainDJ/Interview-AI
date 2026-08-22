@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import { useState } from 'react'
 import ResumeForm from '../components/resume/ResumeForm'
 import initialData from '../components/resume/initialData'
 import { motion } from "motion/react"

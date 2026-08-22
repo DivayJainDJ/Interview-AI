@@ -7,8 +7,7 @@ export const getResume = async () => {
         const response = await api.get("/api/resume/get-resume")
         
         return response.data
-    } catch (error) {
-     
+    } catch {
         return null
     }
     

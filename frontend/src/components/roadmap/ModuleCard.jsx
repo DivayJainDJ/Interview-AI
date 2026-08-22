@@ -1,4 +1,3 @@
-import React from 'react'
 import { useState } from 'react';
 import { AnimatePresence, motion } from "motion/react";
 import { FiBookOpen, FiChevronDown, FiChevronUp, FiClock, FiYoutube } from 'react-icons/fi';

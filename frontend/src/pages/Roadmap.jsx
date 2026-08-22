@@ -1,16 +1,14 @@
-import React from 'react'
 import { AnimatePresence, motion } from "motion/react"
 import { FiCheck, FiChevronDown, FiClock, FiFileText, FiSend, FiX, FiZap } from 'react-icons/fi'
 import { useNavigate } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { BsRocketTakeoff } from "react-icons/bs";
-import { useCoins } from '../apis/user.api'
+import { spendCoins } from '../apis/user.api'
 import api from '../utils/axios'
 import { useSelector } from 'react-redux'
-import { useEffect } from 'react'
 import RoadmapResult from '../components/roadmap/RoadmapResult'
 const PACKAGE_OPTIONS = ["10 LPA", "15 LPA", "20 LPA", "30 LPA", "40 LPA"];
-function Roadmap({ user, setUser }) {
+function Roadmap({ setUser }) {
     const navigate = useNavigate()
     const [historyOpen, setHistoryOpen] = useState(false);
     const [roadmap, setRoadmap] = useState(null);
@@ -26,11 +24,6 @@ function Roadmap({ user, setUser }) {
     const { resume } = useSelector((state) => state.resume)
 
 
-    useEffect(() => {
-
-        getAllRoadmaps()
-    }, [])
-
     const getAllRoadmaps = async () => {
             setHistoryLoading(true)
             try {
@@ -43,6 +36,10 @@ function Roadmap({ user, setUser }) {
                 setHistoryLoading(false)
             }
         }
+
+    useEffect(() => {
+        getAllRoadmaps()
+    }, [])
 
 
     const getRoadmapById = async (id) => {
@@ -62,11 +59,11 @@ function Roadmap({ user, setUser }) {
         setError("");
         try {
             try {
-                const coinResponse = await useCoins({ coins: 20, action: "roadmap-builder" })
+                const coinResponse = await spendCoins({ coins: 20, action: "roadmap-builder" })
                 setUser((prev) => ({
                     ...prev, interviewCoin: coinResponse?.interviewCoin,
                 }))
-            } catch (error) {
+            } catch {
                 setLoading(false)
                 alert("Failed to use coins.")
                 return;
@@ -79,7 +76,7 @@ function Roadmap({ user, setUser }) {
                 resume
             })
             setRoadmap(response.data.data)
-getAllRoadmaps()
+            await getAllRoadmaps()
             setLoading(false)
 
         } catch (error) {

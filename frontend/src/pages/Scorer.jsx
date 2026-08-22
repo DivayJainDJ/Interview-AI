@@ -1,4 +1,3 @@
-import React from 'react'
 import { useNavigate } from 'react-router-dom'
 import { motion } from "motion/react"
 import { useState } from 'react'
@@ -7,7 +6,7 @@ import api from '../utils/axios'
 import { useDispatch, useSelector } from 'react-redux'
 import { setResume } from '../redux/resumeSlice'
 import { PolarAngleAxis, RadialBar, RadialBarChart } from "recharts"
-import { useCoins } from '../apis/user.api'
+import { spendCoins } from '../apis/user.api'
 const ScoreRing = ({ score }) => {
     const color = score >= 75 ? "#7c3aed" : score >= 50 ? "#f59e0b" : "#ef4444";
     return (
@@ -75,7 +74,7 @@ const Navbar = ({ label }) => {
     )
 }
 
-function Scorer({ user, setUser }) {
+function Scorer({ setUser }) {
     const [file, setFile] = useState(null)
     const [loading, setLoading] = useState(false)
     const dispatch = useDispatch()
@@ -89,11 +88,11 @@ function Scorer({ user, setUser }) {
             setLoading(true)
 
             try {
-                const coinResponse = await useCoins({ coins: 10, action: "resume-scorer" })
+                const coinResponse = await spendCoins({ coins: 10, action: "resume-scorer" })
                 setUser((prev) => ({
                     ...prev, interviewCoin: coinResponse?.interviewCoin,
                 }))
-            } catch (error) {
+            } catch {
                 setLoading(false)
                 alert("Failed to use coins.")
                 return;

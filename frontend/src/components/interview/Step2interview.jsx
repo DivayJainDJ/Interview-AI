@@ -1,5 +1,4 @@
-import React, { useEffect, useRef } from 'react'
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import maleVideo from "../../assets/male-ai.mp4"
 import femaleVideo from "../../assets/female-ai.mp4"
 import { AnimatePresence, motion } from "motion/react"
@@ -89,7 +88,7 @@ const navigate = useNavigate()
           if(userVideoRef.current) userVideoRef.current.srcObject = stream
 
         },100)
-      } catch (error) {
+      } catch {
         setCameraOn(false)
       }
     }

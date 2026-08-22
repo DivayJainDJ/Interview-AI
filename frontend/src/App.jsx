@@ -1,10 +1,7 @@
-import React from 'react'
 import { Routes , Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
-import { use } from 'react'
-import { useState } from 'react'
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import { getCurrentUser } from './apis/user.api'
 import Scorer from './pages/Scorer'
 import { getResume } from './apis/resume.api'
@@ -44,7 +41,7 @@ function App() {
 
     getResumeData()
 
-  },[])
+  },[dispatch])
 
 
   if(loading){

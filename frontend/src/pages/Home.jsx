@@ -1,4 +1,3 @@
-import React from 'react'
 import { motion } from "motion/react"
 import { GiArtificialHive } from "react-icons/gi";
 import { FaArrowRight } from "react-icons/fa6";

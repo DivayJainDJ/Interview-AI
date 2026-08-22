@@ -1,11 +1,9 @@
-import React from 'react'
-import { useEffect } from 'react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate, useParams } from 'react-router-dom'
 import { getInterview } from '../apis/interview.api'
 import Step2interview from '../components/interview/Step2interview'
 
-function InterviewPage({user , setUser}) {
+function InterviewPage({user}) {
     const {id} = useParams()
     const [loading , setLoading] = useState(true)
     const [interview,setInterview] = useState(null)
