@@ -16,8 +16,17 @@ app.get("/",(req,res)=>{
 
 app.use("/",billingRouter)
 
-app.listen(PORT , ()=>{
-    console.log(`Billing-service Started on ${PORT}`)
-    connectDB()
-    
-})
+const startServer = async () => {
+    try {
+        await connectDB();
+
+        app.listen(PORT, () => {
+            console.log(`Billing-service Started on ${PORT}`);
+        });
+    } catch (error) {
+        console.error("Failed to start Billing service:", error);
+        process.exit(1);
+    }
+};
+
+startServer();
