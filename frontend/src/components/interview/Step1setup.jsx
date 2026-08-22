@@ -3,7 +3,7 @@ import { FiArrowLeft, FiArrowRight, FiBriefcase, FiCheck, FiCheckCircle, FiFileT
 import { useNavigate } from 'react-router-dom'
 import { useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { spendCoins } from '../../apis/user.api'
+import { shouldBlockOnCoinError, spendCoins } from '../../apis/user.api'
 import api from '../../utils/axios'
 import { setResume } from '../../redux/resumeSlice'
 import { startInterview } from '../../apis/interview.api'
@@ -31,10 +31,12 @@ function Step1setup({ user, setUser }) {
             setUser((prev) => ({
                 ...prev, interviewCoin: coinResponse?.interviewCoin,
             }))
-            } catch {
-                setUploading(false)
-                alert("Failed to use coins.")
-                return;
+            } catch (error) {
+                if (shouldBlockOnCoinError(error)) {
+                    setUploading(false)
+                    alert(error?.response?.data?.message || "Failed to use coins.")
+                    return;
+                }
             }
 
 
@@ -65,13 +67,21 @@ function Step1setup({ user, setUser }) {
             setUser((prev) => ({
                 ...prev, interviewCoin: coinResponse?.interviewCoin,
             }))
-            } catch {
-                setStarting(false)
-                alert("Failed to use coins.")
-                return;
+            } catch (error) {
+                if (shouldBlockOnCoinError(error)) {
+                    setStarting(false)
+                    alert(error?.response?.data?.message || "Failed to use coins.")
+                    return;
+                }
             }
 
 
+        }
+
+        if(!response?.interviewId){
+            setStarting(false)
+            alert("Unable to start interview right now. Please try again.")
+            return;
         }
 
         setStarting(false)

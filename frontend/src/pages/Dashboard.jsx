@@ -8,6 +8,8 @@ import { useEffect } from 'react'
 import { getAllInterviews } from '../apis/interview.api'
 import Statbox from '../components/Statbox'
 import InterviewGraph from '../components/InterviewGraph'
+import { auth } from '../utils/firebase'
+import { signOut } from 'firebase/auth'
 function Dashboard({ user, setUser }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [moblieOpen, setMoblieOpen] = useState(false)
@@ -53,6 +55,7 @@ function Dashboard({ user, setUser }) {
       const response = await api.get("/api/auth/logout")
 
       if (response.data.success) {
+        await signOut(auth).catch(() => {})
 
         setUser(null)
         navigate("/")

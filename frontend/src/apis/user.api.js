@@ -20,3 +20,8 @@ export const spendCoins = async (data)=>{
         throw error;
     }
 }
+
+export const shouldBlockOnCoinError = (error) => {
+    const status = error?.response?.status
+    return status === 400 || status === 401 || status === 403
+}

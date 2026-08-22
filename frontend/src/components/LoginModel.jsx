@@ -1,7 +1,7 @@
 import { FiX } from "react-icons/fi";
 import { motion } from "motion/react"
 import { FcGoogle } from "react-icons/fc";
-import { signInWithPopup } from 'firebase/auth';
+import { signInWithPopup, signOut } from 'firebase/auth';
 import { auth, provider } from '../utils/firebase';
 import api from '../utils/axios';
 function LoginModel({ onClose ,setUser}) {
@@ -17,6 +17,7 @@ function LoginModel({ onClose ,setUser}) {
             onClose()
         } catch (error) {
             console.log(error)
+            await signOut(auth)
         }
     }
 

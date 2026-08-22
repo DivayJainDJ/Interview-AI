@@ -3,7 +3,7 @@ import { FiCheck, FiChevronDown, FiClock, FiFileText, FiSend, FiX, FiZap } from 
 import { useNavigate } from 'react-router-dom'
 import { useEffect, useState } from 'react'
 import { BsRocketTakeoff } from "react-icons/bs";
-import { spendCoins } from '../apis/user.api'
+import { shouldBlockOnCoinError, spendCoins } from '../apis/user.api'
 import api from '../utils/axios'
 import { useSelector } from 'react-redux'
 import RoadmapResult from '../components/roadmap/RoadmapResult'
@@ -63,10 +63,12 @@ function Roadmap({ setUser }) {
                 setUser((prev) => ({
                     ...prev, interviewCoin: coinResponse?.interviewCoin,
                 }))
-            } catch {
-                setLoading(false)
-                alert("Failed to use coins.")
-                return;
+            } catch (error) {
+                if (shouldBlockOnCoinError(error)) {
+                    setLoading(false)
+                    alert(error?.response?.data?.message || "Failed to use coins.")
+                    return;
+                }
             }
 
             const response = await api.post("/api/roadmap/generate", {

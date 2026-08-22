@@ -3,6 +3,8 @@ import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import { useEffect, useState } from 'react'
 import { getCurrentUser } from './apis/user.api'
+import { auth } from './utils/firebase'
+import { signOut } from 'firebase/auth'
 import Scorer from './pages/Scorer'
 import { getResume } from './apis/resume.api'
 import { useDispatch } from 'react-redux'
@@ -25,6 +27,9 @@ function App() {
     const getUser = async () => {
       const data = await getCurrentUser()
       setUser(data?.user)
+      if (!data?.user) {
+        await signOut(auth).catch(() => {})
+      }
       setLoading(false)
     }
 
@@ -35,13 +40,17 @@ function App() {
   useEffect(()=>{
 
     const getResumeData = async()=>{
+      if (!user) {
+        dispatch(setResume(null))
+        return
+      }
       const result = await getResume()
       dispatch(setResume(result?.data))
     }
 
     getResumeData()
 
-  },[dispatch])
+  },[dispatch, user])
 
 
   if(loading){

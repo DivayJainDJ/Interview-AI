@@ -7,6 +7,33 @@ import { app } from "../configs/firebase.js";
 import User from "../model/user.model.js";
 import  redis from "../../../shared/redis/redis.js";
 
+const getSessionCookieOptions = () => {
+  const isProduction = process.env.NODE_ENV === "production";
+
+  return {
+    httpOnly: true,
+    secure: isProduction,
+    sameSite: isProduction ? "none" : "lax",
+    path: "/",
+  };
+};
+
+const clearSessionCookie = (res) => {
+  res.clearCookie("session", { ...getSessionCookieOptions() });
+  res.clearCookie("session", {
+    httpOnly: true,
+    secure: true,
+    sameSite: "none",
+    path: "/",
+  });
+  res.clearCookie("session", {
+    httpOnly: true,
+    secure: false,
+    sameSite: "lax",
+    path: "/",
+  });
+};
+
 
 export const login = async (req, res) => {
 
@@ -53,12 +80,8 @@ export const login = async (req, res) => {
 
       }),"EX", 60 * 60 * 24 * 7);
 
-    const isProduction = process.env.NODE_ENV === "production";
-
     res.cookie("session", sessionId, {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
+      ...getSessionCookieOptions(),
       maxAge: 1000 * 60 * 60 * 24 * 7,
     });
 
@@ -81,13 +104,7 @@ export const logout = async (req, res) => {
       await redis.del(`session:${sessionId}`);
     }
 
-    const isProduction = process.env.NODE_ENV === "production";
-
-    res.clearCookie("session", {
-      httpOnly: true,
-      secure: isProduction,
-      sameSite: isProduction ? "none" : "lax",
-    });
+    clearSessionCookie(res);
 
     return res.json({
       success: true,
@@ -107,7 +124,21 @@ export const useInterviewCoins = async (req, res) => {
   try {
 const sessionId = req.cookies?.session;
 
+  if (!sessionId) {
+    return res.status(401).json({
+      success: false,
+      message: "Unauthorized",
+    });
+  }
+
   const session = await redis.get(`session:${sessionId}`)
+
+  if (!session) {
+    return res.status(401).json({
+      success: false,
+      message: "Session expired",
+    });
+  }
 
   const sessionData = JSON.parse(session);
 

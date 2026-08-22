@@ -10,8 +10,8 @@ import fs from "fs"
 
 
 export const uploadResume = async (req,res) => {
+    const file = req.file;
     try {
-        const file = req.file;
         if(!file){
             return res.status(400).json({
                 success:false,
@@ -66,7 +66,7 @@ export const uploadResume = async (req,res) => {
         console.log(error)
 
         if(file){
-            await fs.unlinkSync(file.path);
+            fs.unlinkSync(file.path);
         }
         return res.status(500).json({
             success:false,

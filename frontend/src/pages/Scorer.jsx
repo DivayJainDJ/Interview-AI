@@ -6,7 +6,7 @@ import api from '../utils/axios'
 import { useDispatch, useSelector } from 'react-redux'
 import { setResume } from '../redux/resumeSlice'
 import { PolarAngleAxis, RadialBar, RadialBarChart } from "recharts"
-import { spendCoins } from '../apis/user.api'
+import { shouldBlockOnCoinError, spendCoins } from '../apis/user.api'
 const ScoreRing = ({ score }) => {
     const color = score >= 75 ? "#7c3aed" : score >= 50 ? "#f59e0b" : "#ef4444";
     return (
@@ -92,10 +92,12 @@ function Scorer({ setUser }) {
                 setUser((prev) => ({
                     ...prev, interviewCoin: coinResponse?.interviewCoin,
                 }))
-            } catch {
-                setLoading(false)
-                alert("Failed to use coins.")
-                return;
+            } catch (error) {
+                if (shouldBlockOnCoinError(error)) {
+                    setLoading(false)
+                    alert(error?.response?.data?.message || "Failed to use coins.")
+                    return;
+                }
             }
 
             const formData = new FormData()
