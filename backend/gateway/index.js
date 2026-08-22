@@ -35,12 +35,21 @@ app.use("/api/auth", async (req, res) => {
     try {
         const url = `${process.env.AUTH_SERVICE_URL}${req.originalUrl.replace("/api/auth", "")}`;
 
+        const headers = {
+            "content-type": req.headers["content-type"] || "application/json",
+        };
+
+        if (req.headers.cookie) {
+            headers.cookie = req.headers.cookie;
+        }
+
+        if (req.headers.authorization) {
+            headers.authorization = req.headers.authorization;
+        }
+
         const response = await fetch(url, {
             method: req.method,
-            headers: {
-                "content-type": req.headers["content-type"] || "application/json",
-                cookie: req.headers.cookie || "",
-            },
+            headers,
             body: ["GET", "HEAD"].includes(req.method)
                 ? undefined
                 : JSON.stringify(req.body),
@@ -48,8 +57,8 @@ app.use("/api/auth", async (req, res) => {
 
         const data = await response.text();
 
-        // Forward cookies from Auth Service
         const setCookie = response.headers.get("set-cookie");
+
         if (setCookie) {
             res.setHeader("set-cookie", setCookie);
         }
@@ -62,9 +71,11 @@ app.use("/api/auth", async (req, res) => {
         );
 
         res.send(data);
+
     } catch (error) {
         console.error("Auth proxy error:", error);
-        res.status(500).json({
+
+        res.status(502).json({
             success: false,
             message: error.message,
         });
