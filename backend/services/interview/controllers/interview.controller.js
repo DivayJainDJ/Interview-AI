@@ -84,6 +84,7 @@ export const startInterview = async (req, res) => {
 export const submitAnswer = async (req, res) => {
     try {
         const userId = req.headers["x-user-id"]
+        console.log("GET ALL INTERVIEWS - userId:", userId)
         const { interviewId, answer } = req.body
 
         if (!interviewId && !answer) {
