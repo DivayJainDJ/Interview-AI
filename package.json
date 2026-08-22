@@ -1,0 +1,12 @@
+{
+  "name": "interview-ai",
+  "private": true,
+  "workspaces": [
+    "backend",
+    "backend/services/*",
+    "frontend"
+  ],
+  "dependencies": {
+    "ioredis": "^5.11.1"
+  }
+}
