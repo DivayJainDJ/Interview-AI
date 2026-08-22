@@ -13,14 +13,12 @@ app.use(express.json());
 
 app.use(cookieParser());
 
-const PORT = process.env.PORT || 6001
-
 app.use("/",authRouter);
 
 
 
-app.listen(PORT,() => {
-    console.log( `Auth Service Started on ${PORT}`);
-    connectDb()
-  }
-);
+const PORT = process.env.PORT || 8001;
+
+app.listen(PORT, () => {
+    console.log(`Auth Service Started on ${PORT}`);
+});
