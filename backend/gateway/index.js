@@ -4,6 +4,7 @@ dotenv.config()
 import cors from "cors"
 import morgan from "morgan"
 import cookieParser from "cookie-parser"
+import proxy from "express-http-proxy"
 import { getCurrentUser } from "./controllers/user.controller.js"
 import { isAuth } from "./middleware/isAuth.js"
 import { proxyWithHeaders } from "./utils/proxyWithHeaders.js"
@@ -30,57 +31,7 @@ app.get("/" , (req,res)=>{
     res.send("Hello from Gateway")
 })
 
-
-app.use("/api/auth", async (req, res) => {
-    try {
-        const url = `${process.env.AUTH_SERVICE_URL}${req.originalUrl.replace("/api/auth", "")}`;
-
-        const headers = {
-            "content-type": req.headers["content-type"] || "application/json",
-        };
-
-        if (req.headers.cookie) {
-            headers.cookie = req.headers.cookie;
-        }
-
-        if (req.headers.authorization) {
-            headers.authorization = req.headers.authorization;
-        }
-
-        const response = await fetch(url, {
-            method: req.method,
-            headers,
-            body: ["GET", "HEAD"].includes(req.method)
-                ? undefined
-                : JSON.stringify(req.body),
-        });
-
-        const data = await response.text();
-
-        const setCookie = response.headers.get("set-cookie");
-
-        if (setCookie) {
-            res.setHeader("set-cookie", setCookie);
-        }
-
-        res.status(response.status);
-
-        res.setHeader(
-            "content-type",
-            response.headers.get("content-type") || "application/json"
-        );
-
-        res.send(data);
-
-    } catch (error) {
-        console.error("Auth proxy error:", error);
-
-        res.status(502).json({
-            success: false,
-            message: error.message,
-        });
-    }
-});
+app.use("/api/auth", proxy(process.env.AUTH_SERVICE_URL))
 app.use("/api/resume" ,isAuth, proxyWithHeaders(process.env.RESUME_SERVICE_URL))
 app.use("/api/interview",isAuth ,proxyWithHeaders(process.env.INTERVIEW_SERVICE_URL))
 app.use("/api/roadmap",isAuth ,proxyWithHeaders(process.env.ROADMAP_SERVICE_URL))
