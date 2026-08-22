@@ -19,7 +19,6 @@ app.use(cors({
 app.use(morgan("dev"))
 app.use(cookieParser())
 
-const PORT = process.env.PORT || 6000
 
 app.get("/" , (req,res)=>{
     res.send("Hello from Gateway")
@@ -37,6 +36,8 @@ app.get("/api/me",isAuth,getCurrentUser)
 
 
 
-app.listen(PORT , ()=>{
-    console.log(`Gateway Started on ${PORT}`)
-})
+const PORT = process.env.PORT || 8000;
+
+app.listen(PORT, () => {
+    console.log(`Gateway Started on ${PORT}`);
+});
