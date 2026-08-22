@@ -11,8 +11,17 @@ const PORT = process.env.PORT || 6004
 
 app.use("/",roadmapRouter)
 
-app.listen(PORT , ()=>{
-    console.log(`Roadmap-service Started on ${PORT}`)
-    connectDB()
-    
-})
+const startServer = async () => {
+    try {
+        await connectDB();
+
+        app.listen(PORT, () => {
+            console.log(`Roadmap-service Started on ${PORT}`);
+        });
+    } catch (error) {
+        console.error("Failed to start Roadmap service:", error);
+        process.exit(1);
+    }
+};
+
+startServer();
