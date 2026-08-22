@@ -19,9 +19,19 @@ app.use(morgan("dev"));
 app.use("/",authRouter);
 
 
-
 const PORT = process.env.PORT || 8001;
 
-app.listen(PORT, () => {
-    console.log(`Auth Service Started on ${PORT}`);
-});
+const startServer = async () => {
+    try {
+        await connectDb();
+
+        app.listen(PORT, () => {
+            console.log(`Auth Service Started on ${PORT}`);
+        });
+    } catch (error) {
+        console.error("Failed to start Auth Service:", error);
+        process.exit(1);
+    }
+};
+
+startServer();
