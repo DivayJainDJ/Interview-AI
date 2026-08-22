@@ -19,6 +19,13 @@ app.use(cors({
 app.use(morgan("dev"))
 app.use(cookieParser())
 
+app.use("/api/auth", (req, res, next) => {
+    console.log("gateway auth route hit", {
+        method: req.method,
+        url: req.originalUrl,
+    })
+    next()
+})
 
 app.get("/" , (req,res)=>{
     res.send("Hello from Gateway")
@@ -31,6 +38,11 @@ app.use("/api/interview",isAuth ,proxyWithHeaders(process.env.INTERVIEW_SERVICE_
 app.use("/api/roadmap",isAuth ,proxyWithHeaders(process.env.ROADMAP_SERVICE_URL))
 app.use("/api/billing",isAuth ,proxyWithHeaders(process.env.BILLING_SERVICE_URL))
 app.get("/api/me",isAuth,getCurrentUser)
+
+app.use((error, req, res, next) => {
+    console.error("gateway error", error)
+    return res.status(500).json({ message: error.message })
+})
 
 
 
