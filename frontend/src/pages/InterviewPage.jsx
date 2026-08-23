@@ -13,6 +13,11 @@ function InterviewPage({user}) {
         const fetchInterview = async () => {
             const response = await getInterview(id)
             const data = response?.interview
+            if(!data){
+                setInterview(null)
+                setLoading(false)
+                return
+            }
             if(data.status === "completed"){
                 navigate(`/interview/${id}/report`,
                     {replace: true});
@@ -33,7 +38,11 @@ function InterviewPage({user}) {
       </div>
         )
     }
-    if(!interview) return null
+    if(!interview) return (
+        <div className="min-h-screen bg-[#07000F] flex items-center justify-center text-white/70 text-sm">
+            Interview not found or unavailable.
+        </div>
+    )
     
     return (
     <Step2interview 

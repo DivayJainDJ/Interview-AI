@@ -83,6 +83,7 @@ function Scorer({ setUser }) {
     const uploadResume = async () => {
         if (!file) {
             alert("Please select a PDF")
+            return
         }
         try {
             setLoading(true)

@@ -105,7 +105,7 @@ export const verifyPayment = async (req, res) => {
         console.log(error);
 
     if (req.body?.razorpay_order_id) {
-      await Payment.findOneAndUpdate(
+      await Billing.findOneAndUpdate(
         {
           razorpayOrderId: req.body.razorpay_order_id,
         },

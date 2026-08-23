@@ -13,7 +13,7 @@ export const startInterview = async (req, res) => {
             useResume = false,
             resume = {}, } = req.body;
 
-        if (!type && !role) {
+        if (!type || !role) {
             return res.status(400).json({
                 success: false,
                 message: "Interview type and role are required",
@@ -87,7 +87,7 @@ export const submitAnswer = async (req, res) => {
         console.log("GET ALL INTERVIEWS - userId:", userId)
         const { interviewId, answer } = req.body
 
-        if (!interviewId && !answer) {
+        if (!interviewId || !answer) {
             return res.status(400).json({
                 success: false,
                 message: "Interview Id and Answer are required",
@@ -317,14 +317,14 @@ export const getAllInterviews = async (req, res) => {
 
             list.forEach((interview) => {
                 interview.questions.forEach((q) => {
-                    total.correctness += q.feedback.correctness || 0;
-                    total.clarity += q.feedback.clarity || 0;
-                    total.relevance += q.feedback.relevance || 0;
-                    total.detail += q.feedback.detail || 0;
-                    total.efficiency += q.feedback.efficiency || 0;
-                    total.communication += q.feedback.communication || 0;
-                    total.problemSolving += q.feedback.problemSolving || 0;
-                    total.creativity += q.feedback.creativity || 0;
+                    total.correctness += q.feedback?.correctness || 0;
+                    total.clarity += q.feedback?.clarity || 0;
+                    total.relevance += q.feedback?.relevance || 0;
+                    total.detail += q.feedback?.detail || 0;
+                    total.efficiency += q.feedback?.efficiency || 0;
+                    total.communication += q.feedback?.communication || 0;
+                    total.problemSolving += q.feedback?.problemSolving || 0;
+                    total.creativity += q.feedback?.creativity || 0;
 
                 })
             })

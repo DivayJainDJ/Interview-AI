@@ -13,6 +13,11 @@ function InterviewReport({ user, setUser }) {
         const fetchReport = async () => {
             const response = await getInterview(id)
             const data = response?.interview
+            if(!data){
+                setReport(null)
+                setLoading(false)
+                return
+            }
             if(data.status !== "completed"){
                 navigate(`/interview/${id}`,
                     {replace: true});
@@ -33,7 +38,11 @@ function InterviewReport({ user, setUser }) {
       </div>
         )
     }
-    if(!report) return null
+    if(!report) return (
+      <div className="min-h-screen bg-[#07000F] flex items-center justify-center text-white/70 text-sm">
+        Interview report not available yet.
+      </div>
+    )
 
 
   return (

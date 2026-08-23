@@ -21,6 +21,7 @@ function Step1setup({ user, setUser }) {
     const uploadResume = async () => {
         if (!file) {
             alert("Please select a PDF")
+            return
         }
         try {
             setUploading(true)
@@ -56,27 +57,27 @@ function Step1setup({ user, setUser }) {
     }
 
     const start = async () => {
-        setStarting(true)
-        const response = await startInterview({ role, type, useResume, resume })
+        if (!role.trim() || starting) {
+            return
+        }
 
-        if(response){
-            try {
-                
+        setStarting(true)
+        try {
             const coinResponse = await spendCoins({ coins: 50, action: "start-interview" })
 
             setUser((prev) => ({
-                ...prev, interviewCoin: coinResponse?.interviewCoin,
+                ...prev,
+                interviewCoin: coinResponse?.interviewCoin,
             }))
-            } catch (error) {
-                if (shouldBlockOnCoinError(error)) {
-                    setStarting(false)
-                    alert(error?.response?.data?.message || "Failed to use coins.")
-                    return;
-                }
+        } catch (error) {
+            if (shouldBlockOnCoinError(error)) {
+                setStarting(false)
+                alert(error?.response?.data?.message || "Failed to use coins.")
+                return
             }
-
-
         }
+
+        const response = await startInterview({ role, type, useResume, resume })
 
         if(!response?.interviewId){
             setStarting(false)
@@ -273,7 +274,7 @@ function Step1setup({ user, setUser }) {
                     onClick={start}
                         whileHover={{ scale: 1.01 }}
                         whileTap={{ scale: 0.98 }}
-                        disabled={!role || starting || (useResume && !resume)}
+                        disabled={!role.trim() || starting || (useResume && !resume)}
                         className='mt-5 h-12 rounded-xl bg-white text-black text-sm font-semibold flex items-center justify-center gap-2 disabled:opacity-40 transition'>
                         {starting ? "Starting Interview..." : (
                             <>Start Interview <FiArrowRight size={15} /></>

@@ -18,9 +18,17 @@ app.get("/" , (req,res)=>{
 
 app.use("/",resumeRouter)
 
+const startServer = async () => {
+    try {
+        await connectDB()
 
+        app.listen(PORT , ()=>{
+            console.log(`Resume-service Started on ${PORT}`)
+        })
+    } catch (error) {
+        console.error("Failed to start Resume service:", error)
+        process.exit(1)
+    }
+}
 
-app.listen(PORT , ()=>{
-    console.log(`Resume-service Started on ${PORT}`)
-    connectDB()
-})
+startServer()
