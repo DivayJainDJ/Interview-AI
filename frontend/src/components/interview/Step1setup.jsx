@@ -61,6 +61,11 @@ function Step1setup({ user, setUser }) {
             return
         }
 
+        if (useResume && !resume) {
+            alert("Upload your resume first or turn off the resume option.")
+            return
+        }
+
         setStarting(true)
         try {
             const coinResponse = await spendCoins({ coins: 50, action: "start-interview" })

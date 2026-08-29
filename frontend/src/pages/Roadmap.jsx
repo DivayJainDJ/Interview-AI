@@ -55,6 +55,10 @@ function Roadmap({ setUser }) {
 
     const handleGenerate = async () => {
         if (!role.trim() || loading) return;
+        if (useResume && !resume) {
+            alert("Upload a scored resume first or turn off the resume option.")
+            return;
+        }
         setLoading(true);
         setError("");
         try {

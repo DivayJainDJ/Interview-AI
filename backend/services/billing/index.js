@@ -10,17 +10,21 @@ app.use(express.json())
 
 const PORT = process.env.PORT || 6005
 
-app.get("/",(req,res)=>{
-    res.send("Hello from Billing-service")
-})
+app.get("/health", (_req, res) => {
+    res.json({ status: "ok", service: "billing" });
+});
 
-app.use("/",billingRouter)
+app.get("/", (_req, res) => {
+    res.send("Hello from Billing-service");
+});
+
+app.use("/", billingRouter);
 
 const startServer = async () => {
     try {
         await connectDB();
 
-        app.listen(PORT, () => {
+        app.listen(PORT, "0.0.0.0", () => {
             console.log(`Billing-service Started on ${PORT}`);
         });
     } catch (error) {

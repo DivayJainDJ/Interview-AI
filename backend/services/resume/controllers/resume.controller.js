@@ -8,6 +8,11 @@ import extractText from "../config/pdf.js";
 import Resume from "../models/resume.model.js";
 import fs from "fs"
 
+const removeFileIfExists = (filePath) => {
+    if (filePath && fs.existsSync(filePath)) {
+        fs.unlinkSync(filePath);
+    }
+}
 
 export const uploadResume = async (req,res) => {
     const file = req.file;
@@ -53,7 +58,7 @@ export const uploadResume = async (req,res) => {
 
         await redis.set(`resume:${userId}`,JSON.stringify(resume));
 
-        await fs.unlinkSync(file.path);
+        removeFileIfExists(file.path);
 
         return res.status(200).json({
             success:true,
@@ -66,7 +71,7 @@ export const uploadResume = async (req,res) => {
         console.log(error)
 
         if(file){
-            fs.unlinkSync(file.path);
+            removeFileIfExists(file.path);
         }
         return res.status(500).json({
             success:false,

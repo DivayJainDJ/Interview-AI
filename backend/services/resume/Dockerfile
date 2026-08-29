@@ -16,7 +16,7 @@ COPY shared ./shared
 
 WORKDIR /app/services/resume
 
-EXPOSE 8002
+EXPOSE 6002
 
 CMD [ "npm","start" ]
 

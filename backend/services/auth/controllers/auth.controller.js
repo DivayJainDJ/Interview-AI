@@ -61,6 +61,10 @@ export const login = async (req, res) => {
 
       });
 
+    } else {
+      user.name = decoded.name || user.name;
+      user.email = decoded.email || user.email;
+      await user.save();
     }
 
     const sessionId =crypto.randomUUID();
@@ -214,6 +218,13 @@ const sessionId = req.cookies?.session;
 export const addCoins = async (req, res) => {
   try {
     const sessionId = req.cookies?.session;
+
+    if (!sessionId) {
+      return res.status(401).json({
+        success: false,
+        message: "Unauthorized",
+      });
+    }
 
     const session = await redis.get(`session:${sessionId}`);
 

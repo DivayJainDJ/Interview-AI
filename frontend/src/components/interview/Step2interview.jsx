@@ -65,6 +65,10 @@ const navigate = useNavigate()
   }
 
   const toggleMic = ()=>{
+    if (!recognitionRef.current) {
+      setMicOn(false)
+      return
+    }
     if(micOn){
       stopMic()
     }else{
@@ -207,6 +211,13 @@ const navigate = useNavigate()
 
     const res = await submitAnswer({ interviewId: interviewData.interviewId, answer:finalAnswer})
 
+    if(!res){
+      setLoading(false);
+      alert("Unable to submit your answer right now. Please try again.");
+      setTimerActive(true);
+      return;
+    }
+
     if(res.completed){
        setFeedback(res.feedback);
         await new Promise((r) => setTimeout(r, 700));
@@ -250,6 +261,13 @@ const navigate = useNavigate()
 
     const res = await submitAnswer({ interviewId: interviewData.interviewId, answer})
 
+    if(!res){
+      setLoading(false);
+      setTimerActive(true);
+      alert("Unable to submit your answer right now. Please try again.");
+      return;
+    }
+
     if(res.completed){
        setFeedback(res.feedback);
         await new Promise((r) => setTimeout(r, 700));
@@ -275,6 +293,14 @@ const navigate = useNavigate()
       setFeedback(null);
 
   }
+
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis?.cancel()
+      recognitionRef.current?.stop()
+      streamRef.current?.getTracks().forEach((track) => track.stop())
+    }
+  }, [])
 
   
 

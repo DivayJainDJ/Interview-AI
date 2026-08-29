@@ -8,7 +8,7 @@ RUN npm install
 
 COPY ./gateway/package*json ./gateway/
 
-RUN npm install
+RUN cd gateway && npm install
 
 COPY gateway ./gateway 
 

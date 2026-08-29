@@ -16,8 +16,11 @@ app.use(express.json());
 app.use(cookieParser());
 app.use(morgan("dev"));
 
-app.use("/",authRouter);
+app.get("/health", (_req, res) => {
+    res.json({ status: "ok", service: "auth" });
+});
 
+app.use("/", authRouter);
 
 const PORT = process.env.PORT || 8001;
 
@@ -25,7 +28,7 @@ const startServer = async () => {
     try {
         await connectDb();
 
-        app.listen(PORT, () => {
+        app.listen(PORT, "0.0.0.0", () => {
             console.log(`Auth Service Started on ${PORT}`);
         });
     } catch (error) {

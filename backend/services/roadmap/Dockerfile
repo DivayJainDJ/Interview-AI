@@ -16,7 +16,7 @@ COPY shared ./shared
 
 WORKDIR /app/services/roadmap
 
-EXPOSE 8004
+EXPOSE 6004
 
 CMD [ "npm","start" ]
 

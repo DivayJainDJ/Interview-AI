@@ -12,19 +12,23 @@ app.use(express.json())
 
 const PORT = process.env.PORT || 6002
 
-app.get("/" , (req,res)=>{
-    res.send("Hello from Resume-service")
-})
+app.get("/health", (_req, res) => {
+    res.json({ status: "ok", service: "resume" });
+});
 
-app.use("/",resumeRouter)
+app.get("/", (_req, res) => {
+    res.send("Hello from Resume-service");
+});
+
+app.use("/", resumeRouter);
 
 const startServer = async () => {
     try {
         await connectDB()
 
-        app.listen(PORT , ()=>{
-            console.log(`Resume-service Started on ${PORT}`)
-        })
+        app.listen(PORT, "0.0.0.0", () => {
+            console.log(`Resume-service Started on ${PORT}`);
+        });
     } catch (error) {
         console.error("Failed to start Resume service:", error)
         process.exit(1)

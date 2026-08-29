@@ -16,7 +16,7 @@ COPY shared ./shared
 
 WORKDIR /app/services/interview
 
-EXPOSE 8003
+EXPOSE 6003
 
 CMD [ "npm","start" ]
 

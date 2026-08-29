@@ -1,0 +1,119 @@
+# Shared secrets used by all backend services.
+# Set these once in the Render dashboard when prompted.
+envVarGroups:
+  - name: fresherai-backend
+    envVars:
+      - key: MONGODB_URL
+        sync: false
+      - key: REDIS_URL
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        sync: false
+      - key: FIREBASE_CLIENT_EMAIL
+        sync: false
+      - key: FIREBASE_PRIVATE_KEY
+        sync: false
+      - key: GROQ_API_KEY
+        sync: false
+      - key: YOUTUBE_API_KEY
+        sync: false
+      - key: RAZORPAY_KEY_ID
+        sync: false
+      - key: RAZORPAY_KEY_SECRET
+        sync: false
+
+services:
+  - type: web
+    name: interview-ai-backend-new
+    runtime: docker
+    dockerfilePath: ./backend/gateway/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: FRONTEND_URL
+        value: https://frontend-git-main-divayjain1208-gmailcoms-projects.vercel.app,https://frontend-fzo61o0bi-divayjain1208-gmailcoms-projects.vercel.app
+      - key: GROQ_MODEL
+        value: qwen/qwen3.6-27b
+      - fromGroup: fresherai-backend
+      - key: AUTH_SERVICE_URL
+        fromService:
+          name: fresherai-auth
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: RESUME_SERVICE_URL
+        fromService:
+          name: fresherai-resume
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: INTERVIEW_SERVICE_URL
+        fromService:
+          name: fresherai-interview
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: ROADMAP_SERVICE_URL
+        fromService:
+          name: fresherai-roadmap
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+      - key: BILLING_SERVICE_URL
+        fromService:
+          name: fresherai-billing
+          type: web
+          envVarKey: RENDER_EXTERNAL_URL
+
+  - type: web
+    name: fresherai-auth
+    runtime: docker
+    dockerfilePath: ./backend/services/auth/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - fromGroup: fresherai-backend
+
+  - type: web
+    name: fresherai-resume
+    runtime: docker
+    dockerfilePath: ./backend/services/resume/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - fromGroup: fresherai-backend
+
+  - type: web
+    name: fresherai-interview
+    runtime: docker
+    dockerfilePath: ./backend/services/interview/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - fromGroup: fresherai-backend
+
+  - type: web
+    name: fresherai-roadmap
+    runtime: docker
+    dockerfilePath: ./backend/services/roadmap/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - fromGroup: fresherai-backend
+
+  - type: web
+    name: fresherai-billing
+    runtime: docker
+    dockerfilePath: ./backend/services/billing/Dockerfile
+    dockerContext: ./backend
+    healthCheckPath: /health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - fromGroup: fresherai-backend
