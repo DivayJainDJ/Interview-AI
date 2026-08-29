@@ -3,7 +3,7 @@ import { motion } from "motion/react"
 import { FcGoogle } from "react-icons/fc";
 import { signInWithPopup, signOut } from 'firebase/auth';
 import { auth, provider } from '../utils/firebase';
-import api from '../utils/axios';
+import { loginWithFirebaseToken } from "../apis/user.api";
 function LoginModel({ onClose ,setUser}) {
 
     const handleGoogleAuth = async () => {
@@ -11,9 +11,9 @@ function LoginModel({ onClose ,setUser}) {
             const result = await signInWithPopup(auth , provider)
             const token = await result.user.getIdToken()
 
-            const response = await api.post("/api/auth/login" , {token})
+            const response = await loginWithFirebaseToken(token)
           
-            setUser(response?.data?.user)
+            setUser(response?.user)
             onClose()
         } catch (error) {
             console.log(error)

@@ -1,10 +1,13 @@
 import redis from "../../shared/redis/redis.js"
 
+const getSessionId = (req) =>
+    req.cookies?.session ||
+    req.headers["x-session-id"]
 
 
 export const isAuth = async (req,res,next) => {
     try {
-        const sessionId = req.cookies?.session
+        const sessionId = getSessionId(req)
 
         if(!sessionId){
             return res.status(401).json({message:"Unauthorized"})

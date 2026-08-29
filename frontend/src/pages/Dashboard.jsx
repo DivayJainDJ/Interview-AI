@@ -1,15 +1,13 @@
 import { useState } from 'react'
 import Sidebar from '../components/Sidebar'
 import { useNavigate } from 'react-router-dom'
-import api from '../utils/axios'
 import { motion } from "motion/react"
 import { FiSidebar } from 'react-icons/fi'
 import { useEffect } from 'react'
 import { getAllInterviews } from '../apis/interview.api'
+import { logoutUser } from '../apis/user.api'
 import Statbox from '../components/Statbox'
 import InterviewGraph from '../components/InterviewGraph'
-import { auth } from '../utils/firebase'
-import { signOut } from 'firebase/auth'
 function Dashboard({ user, setUser }) {
   const [sidebarOpen, setSidebarOpen] = useState(true)
   const [moblieOpen, setMoblieOpen] = useState(false)
@@ -65,14 +63,9 @@ function Dashboard({ user, setUser }) {
 
   const handleLogout = async () => {
     try {
-      const response = await api.get("/api/auth/logout")
-
-      if (response.data.success) {
-        await signOut(auth).catch(() => {})
-
-        setUser(null)
-        navigate("/")
-      }
+      await logoutUser()
+      setUser(null)
+      navigate("/")
     } catch (error) {
       console.log(error)
     }
