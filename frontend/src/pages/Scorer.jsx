@@ -118,7 +118,7 @@ function Scorer({ setUser }) {
 
         } catch (error) {
             console.log(error)
-            alert("Upload failed")
+            alert(error?.response?.data?.message || "Upload failed")
             setLoading(false)
         }
     }
