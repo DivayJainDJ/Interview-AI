@@ -6,7 +6,7 @@ const llm = new ChatGroq({
     model: process.env.GROQ_MODEL || "qwen/qwen3.8-27b",
     temperature: 0.2,
     maxTokens: 4000,
-    maxRetries: 2,
+    maxRetries: 3,
     reasoning_effort: "none",
 })
 

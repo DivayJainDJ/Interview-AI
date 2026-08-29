@@ -58,8 +58,8 @@ app.get("/", (_req, res) => {
     res.send("Hello from Gateway")
 })
 
-// Wake up all downstream services (Render free tier spins down inactive services)
-const warmupServices = async () => {
+// Wake up all downstream services once on startup (Render free tier cold starts)
+setTimeout(() => {
     const services = [
         process.env.AUTH_SERVICE_URL,
         process.env.RESUME_SERVICE_URL,
@@ -69,15 +69,11 @@ const warmupServices = async () => {
     ].filter(Boolean);
 
     for (const url of services) {
-        fetch(`${url}/health`, { signal: AbortSignal.timeout(10000) })
-            .then(() => console.log(`Warmed up: ${url}`))
+        fetch(`${url}/health`, { signal: AbortSignal.timeout(15000) })
+            .then(() => console.log(`Warmed: ${url}`))
             .catch(() => {});
     }
-};
-
-// Ping services every 10 minutes to keep them warm
-warmupServices();
-setInterval(warmupServices, 10 * 60 * 1000);
+}, 3000);
 
 app.use("/api/auth", proxyWithHeaders(process.env.AUTH_SERVICE_URL, "/api/auth"))
 app.use("/api/resume", isAuth, proxyWithHeaders(process.env.RESUME_SERVICE_URL, "/api/resume"))
