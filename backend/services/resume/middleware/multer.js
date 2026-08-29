@@ -11,7 +11,8 @@ const storage = multer.diskStorage({
       cb(null , uploadPath)
     },
     filename:(req,file,cb)=>{
-        cb(null , file.originalname)
+        const uniqueName = `${Date.now()}-${req.headers["x-user-id"] || "user"}-${file.originalname}`
+        cb(null , uniqueName)
     }
 })
 

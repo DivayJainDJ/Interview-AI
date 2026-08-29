@@ -62,6 +62,7 @@ app.use("/api/auth", proxyWithHeaders(process.env.AUTH_SERVICE_URL, "/api/auth")
 app.use("/api/resume", isAuth, proxyWithHeaders(process.env.RESUME_SERVICE_URL, "/api/resume"))
 app.use("/api/interview", isAuth, proxyWithHeaders(process.env.INTERVIEW_SERVICE_URL, "/api/interview"))
 app.use("/api/roadmap", isAuth, proxyWithHeaders(process.env.ROADMAP_SERVICE_URL, "/api/roadmap"))
+app.use("/api/billing/verify", proxyWithHeaders(process.env.BILLING_SERVICE_URL, "/api/billing"))
 app.use("/api/billing", isAuth, proxyWithHeaders(process.env.BILLING_SERVICE_URL, "/api/billing"))
 app.get("/api/me", isAuth, getCurrentUser)
 
