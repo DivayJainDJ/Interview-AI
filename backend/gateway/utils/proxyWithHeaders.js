@@ -1,4 +1,4 @@
-import { createProxyMiddleware } from "http-proxy-middleware";
+import { createProxyMiddleware, fixRequestBody } from "http-proxy-middleware";
 import { normalizeServiceUrl } from "./normalizeServiceUrl.js";
 
 const escapeRegex = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -24,9 +24,19 @@ export const proxyWithHeaders = (serviceUrl, routePrefix) => {
         on: {
             proxyReq: (proxyReq, req) => {
                 if (req.user?.userId) {
-                    proxyReq.setHeader("x-user-id", req.user.userId);
+                  proxyReq.setHeader("x-user-id", req.user.userId);
                 }
-            },
+              
+                const sessionId =
+                  req.cookies?.session ||
+                  req.headers["x-session-id"];
+              
+                if (sessionId) {
+                  proxyReq.setHeader("x-session-id", sessionId);
+                }
+              
+                fixRequestBody(proxyReq, req);
+              },
             error: (error, req, res) => {
                 console.error(`proxy error [${routePrefix}] -> ${target}`, error.message);
 
