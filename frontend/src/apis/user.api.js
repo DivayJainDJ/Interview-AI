@@ -1,9 +1,15 @@
+import axios from "axios"
 import api from "../utils/axios"
 import { auth } from "../utils/firebase"
 import { signOut } from "firebase/auth"
 
+const authApi = axios.create({
+    baseURL: import.meta.env.VITE_AUTH_URL || "https://interview-ai-auth.onrender.com",
+    withCredentials: true
+})
+
 export const loginWithFirebaseToken = async (token) => {
-    const response = await api.post("/api/auth/login", { token })
+    const response = await authApi.post("/login", { token })
     const sessionId = response?.data?.sessionId
 
     if (sessionId && typeof window !== "undefined") {
@@ -15,7 +21,7 @@ export const loginWithFirebaseToken = async (token) => {
 
 export const logoutUser = async () => {
     try {
-        await api.get("/api/auth/logout")
+        await authApi.get("/logout")
     } finally {
         if (typeof window !== "undefined") {
             window.localStorage.removeItem("sessionId")
