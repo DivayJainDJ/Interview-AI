@@ -8,6 +8,17 @@ const authApi = axios.create({
     withCredentials: true
 })
 
+authApi.interceptors.request.use((config) => {
+    if (typeof window !== "undefined") {
+        const sessionId = window.localStorage.getItem("sessionId")
+        if (sessionId) {
+            config.headers["x-session-id"] = sessionId
+        }
+    }
+
+    return config
+})
+
 export const loginWithFirebaseToken = async (token) => {
     const response = await authApi.post("/login", { token })
     const sessionId = response?.data?.sessionId
@@ -42,7 +53,7 @@ export const getCurrentUser = async () => {
 
 export const spendCoins = async (data)=>{
     try {
-        const response = await api.post("/api/auth/use-coins" , data)
+        const response = await authApi.post("/use-coins" , data)
         console.log(response.data)
         return response.data
     } catch (error) {

@@ -2,11 +2,16 @@ import { useNavigate } from 'react-router-dom'
 import { motion } from "motion/react"
 import { useState } from 'react'
 import { FiAlertCircle, FiTrendingUp, FiUploadCloud, FiUser, FiZap } from 'react-icons/fi'
-import api from '../utils/axios'
+import axios from "axios"
 import { useDispatch, useSelector } from 'react-redux'
 import { setResume } from '../redux/resumeSlice'
 import { PolarAngleAxis, RadialBar, RadialBarChart } from "recharts"
 import { shouldBlockOnCoinError, spendCoins } from '../apis/user.api'
+
+const resumeApi = axios.create({
+    baseURL: import.meta.env.VITE_RESUME_URL || "https://interview-ai-resume-f4up.onrender.com",
+    withCredentials: true
+})
 const ScoreRing = ({ score }) => {
     const color = score >= 75 ? "#7c3aed" : score >= 50 ? "#f59e0b" : "#ef4444";
     return (
@@ -104,7 +109,7 @@ function Scorer({ setUser }) {
             const formData = new FormData()
             formData.append("resume", file)
 
-            const response = await api.post("/api/resume/upload", formData)
+            const response = await resumeApi.post("/upload", formData)
 
             dispatch(setResume(response?.data?.data))
             setLoading(false)
