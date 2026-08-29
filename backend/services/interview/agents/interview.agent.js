@@ -4,12 +4,24 @@ import technicalInterviewPrompt from "../prompts/technicalInterviewPrompt.js"
 import { cleanJson } from "../../../shared/utils/cleanJson.js"
 
 export const interviewAgent = async (data) => {
-    try {
-        const prompt = data.type?.toLowerCase() === "hr" ? hrInterviewPrompt(data) : technicalInterviewPrompt(data)
-        const response = await llm.invoke(prompt)
-        return JSON.parse(cleanJson(response.content))
-    } catch (error) {
-        console.log("Interview Agent Parse Error", error);
-        throw new Error("Failed to generate interview questions.");
+    const prompt = data.type?.toLowerCase() === "hr"
+        ? hrInterviewPrompt(data)
+        : technicalInterviewPrompt(data)
+
+    let lastError
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            const response = await llm.invoke(prompt)
+            const parsed = JSON.parse(cleanJson(response.content))
+            if (!Array.isArray(parsed) || parsed.length === 0) {
+                throw new Error("Empty questions array")
+            }
+            return parsed
+        } catch (error) {
+            lastError = error
+            console.log(`Interview Agent attempt ${attempt} failed:`, error.message)
+            if (attempt < 3) await new Promise(r => setTimeout(r, 1000 * attempt))
+        }
     }
+    throw new Error("Failed to generate interview questions.")
 }

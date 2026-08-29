@@ -2,9 +2,14 @@ import { HumanMessage, SystemMessage } from "@langchain/core/messages"
 import llm from "../config/llm.js"
 import { cleanJson } from "../../../shared/utils/cleanJson.js"
 
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
 export const resumeAgent = async (resumeText) => {
-    const response = await llm.invoke([
-        new SystemMessage(`
+    let lastError
+    for (let attempt = 1; attempt <= 3; attempt++) {
+        try {
+            const response = await llm.invoke([
+                new SystemMessage(`
 You are an Expert ATS Resume Analyzer.
 
 Analyze the given resume.
@@ -53,9 +58,20 @@ Response Format:
   "recommendations":[]
 }
 `),
-   new HumanMessage(resumeText),
-    ])
+                new HumanMessage(resumeText),
+            ])
 
-    const cleaned = cleanJson(response.content);
-    return cleaned;
+            const cleaned = cleanJson(response.content);
+
+            // Validate it's actually JSON before returning
+            JSON.parse(cleaned);
+            return cleaned;
+
+        } catch (error) {
+            lastError = error
+            console.log(`Resume Agent attempt ${attempt} failed:`, error.message)
+            if (attempt < 3) await sleep(2000 * attempt)
+        }
+    }
+    throw new Error("Failed to analyze resume")
 }

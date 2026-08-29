@@ -31,8 +31,14 @@ export const proxyWithHeaders = (serviceUrl, routePrefix) => {
                 console.error(`proxy error [${routePrefix}] -> ${target}`, error.message);
 
                 if (!res.headersSent) {
+                    // Manually set CORS headers so the browser can read the error
+                    const origin = req.headers.origin;
+                    if (origin) {
+                        res.setHeader("Access-Control-Allow-Origin", origin);
+                        res.setHeader("Access-Control-Allow-Credentials", "true");
+                    }
                     res.status(502).json({
-                        message: `Service unavailable for ${routePrefix}. If this persists, check that the backend service is running.`,
+                        message: `Service unavailable for ${routePrefix}. Please try again in a moment.`,
                     });
                 }
             },

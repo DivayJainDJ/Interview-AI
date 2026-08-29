@@ -3,56 +3,56 @@ import llm from "../configs/llm.js";
 import searchVideo from "../configs/youtube.js";
 import { cleanJson } from "../../../shared/utils/cleanJson.js";
 
+// Wait for Groq TPM window to reset before making another large call
+const sleep = (ms) => new Promise(r => setTimeout(r, ms));
+
 const resourceAgent = async (state) => {
     try {
         const roadmap = state.roadmap;
-        const moduleTitles = roadmap.modules.map((module) => module.title).join("\n");
+        const modules = roadmap.modules || [];
 
-        const docsResponse = await llm.invoke([
-            new SystemMessage(`
-You are an expert software engineer.
+        // Wait 12s to let the Groq TPM window reset after roadmapAgent's heavy call
+        await sleep(12000);
 
-For every module below return the official documentation.
+        // Fetch docs in batches of 5 to stay under TPM limit
+        const BATCH = 5;
+        const docsMap = new Map();
 
-Rules:
+        for (let i = 0; i < modules.length; i += BATCH) {
+            const batch = modules.slice(i, i + BATCH);
+            const titles = batch.map(m => m.title).join("\n");
 
-1. Prefer official documentation.
-2. If official documentation does not exist, return the best learning article.
-3. Return ONLY valid JSON.
-4. Do not explain anything.
-5. Keep the same title.
+            try {
+                const docsResponse = await llm.invoke([
+                    new SystemMessage(`You are an expert software engineer.
+For every module title below, return the best official documentation URL.
+Return ONLY valid JSON array. No explanation. No markdown.
+Format: [{"title":"","article":""}]`),
+                    new HumanMessage(`Modules:\n${titles}`)
+                ]);
 
-Return format:
+                const docs = JSON.parse(cleanJson(docsResponse.content));
+                docs.forEach(item => {
+                    if (item.title && item.article) {
+                        docsMap.set(item.title.toLowerCase(), item.article);
+                    }
+                });
+            } catch {
+                // If docs fetch fails, continue without articles
+            }
 
-[
-  {
-    "title":"",
-    "article":""
-  }
-]
-`),
-            new HumanMessage(`Modules: ${moduleTitles}`)
-        ]);
-
-        let docs = [];
-        try {
-            docs = JSON.parse(cleanJson(docsResponse.content));
-        } catch {
-            docs = [];
+            // Small pause between batches
+            if (i + BATCH < modules.length) await sleep(3000);
         }
 
-        const docsMap = new Map();
-        docs.forEach((item) => {
-            docsMap.set(item.title.toLowerCase(), item.article);
-        });
-
+        // Fetch YouTube videos in parallel (doesn't use Groq TPM)
         roadmap.modules = await Promise.all(
-            roadmap.modules.map(async (module) => {
+            modules.map(async (module) => {
                 let video = null;
                 try {
                     video = await searchVideo(module.title);
                 } catch (err) {
-                    console.log(err.message);
+                    console.log("YouTube search error:", err.message);
                 }
                 return {
                     ...module,
@@ -65,7 +65,8 @@ Return format:
         return { ...state, roadmap };
 
     } catch (error) {
-        console.log("Resource Agent Error", error);
+        console.log("Resource Agent Error:", error.message);
+        // Return state without resources rather than failing the whole request
         return state;
     }
 }
