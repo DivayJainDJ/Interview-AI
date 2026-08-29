@@ -1,18 +1,34 @@
 import fs from "fs";
-import { createRequire } from "module";
+import PDFParser from "pdf2json";
 
-// pdf-parse is CJS-only; use createRequire to load it inside an ESM project
-const require = createRequire(import.meta.url);
-const pdfParse = require("pdf-parse");
-
-const extractText = async (filePath) => {
-    try {
+const extractText = (filePath) =>
+    new Promise((resolve, reject) => {
         const buffer = fs.readFileSync(filePath);
-        const data = await pdfParse(buffer);
-        return data.text.trim();
-    } catch (error) {
-        throw new Error(`Failed to read PDF: ${error.message}`);
-    }
-};
+        const parser = new PDFParser(null, 1);
+
+        parser.on("pdfParser_dataReady", (data) => {
+            try {
+                const text = data.Pages
+                    .flatMap((page) => page.Texts)
+                    .map((t) => decodeURIComponent(t.R.map((r) => r.T).join("")))
+                    .join(" ")
+                    .trim();
+
+                if (!text) {
+                    return reject(new Error("Failed to read PDF: no text extracted"));
+                }
+
+                resolve(text);
+            } catch (err) {
+                reject(new Error(`Failed to read PDF: ${err.message}`));
+            }
+        });
+
+        parser.on("pdfParser_dataError", (err) => {
+            reject(new Error(`Failed to read PDF: ${err.parserError || err}`));
+        });
+
+        parser.parseBuffer(buffer);
+    });
 
 export default extractText;
