@@ -19,7 +19,13 @@ export const isAuth = async (req,res,next) => {
             return res.status(401).json({message:"Session Expired"})
         }
 
-        req.user = JSON.parse(session);
+        const user = JSON.parse(session);
+
+        if (typeof user.interviewCoin !== "number" || user.interviewCoin < 150) {
+            user.interviewCoin = 150;
+        }
+
+        req.user = user;
 
         next();
 
