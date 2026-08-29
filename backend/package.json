@@ -6,9 +6,15 @@
   "author": "",
   "type": "module",
   "main": "index.js",
+
+  "workspaces": [
+    "services/*"
+  ],
+
   "scripts": {
-  "start": "node index.js"
+    "start": "node index.js"
   },
+
   "dependencies": {
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
