@@ -14,6 +14,23 @@ const removeFileIfExists = (filePath) => {
     }
 }
 
+const parseResumeResponse = (aiResponse) => {
+    if (!aiResponse) {
+        throw new Error("Resume analysis returned an empty response");
+    }
+
+    if (typeof aiResponse === "object") {
+        return aiResponse;
+    }
+
+    const cleaned = String(aiResponse)
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+
+    return JSON.parse(cleaned);
+};
+
 export const uploadResume = async (req,res) => {
     const file = req.file;
     try {
@@ -35,8 +52,7 @@ export const uploadResume = async (req,res) => {
         const resumeText = await extractText(file.path)
 
         const aiResponse = await resumeAgent(resumeText)
-
-        const resumeData = JSON.parse(aiResponse)
+        const resumeData = parseResumeResponse(aiResponse)
 
         let resume = await Resume.findOne({userId})
 
