@@ -12,6 +12,7 @@ export const interviewAgent = async (data) => {
         const response = await llm.invoke(prompt)
 
         const cleaned = response.content
+        .replace(/<think>[\s\S]*?<\/think>/gi, "")
         .replace(/```json/g, "")
         .replace(/```/g, "")
         .trim();

@@ -39,6 +39,7 @@ Return format:
 
             docs = JSON.parse(
                 docsResponse.content
+                    .replace(/<think>[\s\S]*?<\/think>/gi, "")
                     .replace(/```json/g, "")
                     .replace(/```/g, "")
                     .trim()

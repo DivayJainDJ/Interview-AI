@@ -33,6 +33,7 @@ ${JSON.stringify(resume, null, 2)}
         ]);
 
         const roadmap = JSON.parse(response.content
+            .replace(/<think>[\s\S]*?<\/think>/gi, "")
             .replace(/```json/g, "")
             .replace(/```/g, "")
             .trim())

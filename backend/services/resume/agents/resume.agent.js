@@ -55,5 +55,11 @@ Response Format:
    new HumanMessage(resumeText),
     ])
 
-    return response.content;
+    const cleaned = String(response.content)
+        .replace(/<think>[\s\S]*?<\/think>/gi, "")
+        .replace(/```json/g, "")
+        .replace(/```/g, "")
+        .trim();
+
+    return cleaned;
 }
