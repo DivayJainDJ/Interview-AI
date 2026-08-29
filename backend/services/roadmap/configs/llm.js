@@ -4,7 +4,7 @@ import dotenv from "dotenv"
 dotenv.config()
 
 const llm = new ChatGroq({
-    model: process.env.GROQ_MODEL || "qwen/qwen3.6-27b",
+    model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
     temperature: 0.2,
     maxTokens: 4000,
     maxRetries: 2,

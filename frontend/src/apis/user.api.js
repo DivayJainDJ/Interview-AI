@@ -4,7 +4,7 @@ import { auth } from "../utils/firebase"
 import { signOut } from "firebase/auth"
 
 const authApi = axios.create({
-    baseURL: import.meta.env.VITE_BACKEND_URL || "https://interview-ai-backend-new.onrender.com",
+    baseURL: import.meta.env.VITE_AUTH_URL || "https://interview-ai-auth.onrender.com",
     withCredentials: true
 })
 
@@ -20,7 +20,7 @@ authApi.interceptors.request.use((config) => {
 })
 
 export const loginWithFirebaseToken = async (token) => {
-    const response = await authApi.post("/api/auth/login", { token })
+    const response = await authApi.post("/login", { token })
     const sessionId = response?.data?.sessionId
 
     if (sessionId && typeof window !== "undefined") {
@@ -32,7 +32,7 @@ export const loginWithFirebaseToken = async (token) => {
 
 export const logoutUser = async () => {
     try {
-        await authApi.get("/api/auth/logout")
+        await authApi.get("/logout")
     } finally {
         if (typeof window !== "undefined") {
             window.localStorage.removeItem("sessionId")
@@ -51,15 +51,12 @@ export const getCurrentUser = async () => {
     }
 }
 
-export const spendCoins = async (data)=>{
+export const spendCoins = async (data) => {
     try {
-        const response = await authApi.post("/api/auth/use-coins" , data)
-        console.log(response.data)
+        const response = await authApi.post("/use-coins", data)
         return response.data
     } catch (error) {
-        console.log(error)
-        
-        throw error;
+        throw error
     }
 }
 
