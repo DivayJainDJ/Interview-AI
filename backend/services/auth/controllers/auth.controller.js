@@ -66,10 +66,14 @@ export const login = async (req, res) => {
         firebaseUid: decoded.uid,
         email: decoded.email,
         name: decoded.name,
+        interviewCoin: 150,
       });
     } else {
       user.name = decoded.name || user.name;
       user.email = decoded.email || user.email;
+      if (typeof user.interviewCoin !== "number" || user.interviewCoin < 150) {
+        user.interviewCoin = 150;
+      }
       await user.save();
     }
 
@@ -147,6 +151,10 @@ export const useInterviewCoins = async (req, res) => {
         success: false,
         message: "User not found",
       });
+    }
+
+    if (typeof user.interviewCoin !== "number" || user.interviewCoin < 150) {
+      user.interviewCoin = 150;
     }
 
     if (user.interviewCoin < coins) {
