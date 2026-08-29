@@ -40,7 +40,7 @@ export const uploadResume = async (req,res) => {
                 message:"Resume PDF is required"
             })
         }
-        const userId = req.headers["x-user-id"];
+        const userId = req.user?.userId || req.headers["x-user-id"];
 
           if(!userId){
             return res.status(400).json({
@@ -100,7 +100,14 @@ export const uploadResume = async (req,res) => {
 
 export const getResume = async (req,res) => {
     try {
-        const userId = req.headers["x-user-id"];
+        const userId = req.user?.userId || req.headers["x-user-id"];
+
+        if (!userId) {
+            return res.status(400).json({
+                success: false,
+                message: "UserId is required",
+            });
+        }
 
     const cache = await redis.get(`resume:${userId}`)
 
