@@ -1,25 +1,14 @@
 import llm from "../config/llm.js";
 import summaryPrompt from "../prompts/summaryPrompt.js";
+import { cleanJson } from "../../../shared/utils/cleanJson.js";
 
 export const summaryAgent = async (data) => {
-
     try {
         const prompt = summaryPrompt(data)
-
         const response = await llm.invoke(prompt)
-
-        const cleaned = response.content
-        .replace(/<think>[\s\S]*?<\/think>/gi, "")
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
-
-        return JSON.parse(cleaned)
+        return JSON.parse(cleanJson(response.content))
     } catch (error) {
-        console.log("Summary Agent Parse Error");
-        console.log(error);
-
+        console.log("Summary Agent Parse Error", error);
         throw new Error("Failed to generate Summary");
-        
     }
 }

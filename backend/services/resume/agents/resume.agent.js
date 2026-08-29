@@ -1,5 +1,6 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages"
 import llm from "../config/llm.js"
+import { cleanJson } from "../../../shared/utils/cleanJson.js"
 
 export const resumeAgent = async (resumeText) => {
     const response = await llm.invoke([
@@ -55,11 +56,6 @@ Response Format:
    new HumanMessage(resumeText),
     ])
 
-    const cleaned = String(response.content)
-        .replace(/<think>[\s\S]*?<\/think>/gi, "")
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
-
+    const cleaned = cleanJson(response.content);
     return cleaned;
 }

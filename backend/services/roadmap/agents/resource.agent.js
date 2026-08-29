@@ -1,11 +1,11 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import llm from "../configs/llm.js";
 import searchVideo from "../configs/youtube.js";
-
+import { cleanJson } from "../../../shared/utils/cleanJson.js";
 
 const resourceAgent = async (state) => {
     try {
-        const roadmap = state.roadmap
+        const roadmap = state.roadmap;
         const moduleTitles = roadmap.modules.map((module) => module.title).join("\n");
 
         const docsResponse = await llm.invoke([
@@ -30,81 +30,43 @@ Return format:
     "article":""
   }
 ]
-`), new HumanMessage(`Modules: ${moduleTitles}`)
-        ])
+`),
+            new HumanMessage(`Modules: ${moduleTitles}`)
+        ]);
 
         let docs = [];
-
         try {
-
-            docs = JSON.parse(
-                docsResponse.content
-                    .replace(/<think>[\s\S]*?<\/think>/gi, "")
-                    .replace(/```json/g, "")
-                    .replace(/```/g, "")
-                    .trim()
-            );
-
+            docs = JSON.parse(cleanJson(docsResponse.content));
         } catch {
-
             docs = [];
-
         }
 
-        const docsMap = new Map()
-
+        const docsMap = new Map();
         docs.forEach((item) => {
+            docsMap.set(item.title.toLowerCase(), item.article);
+        });
 
-      docsMap.set(
-        item.title.toLowerCase(),
-        item.article
-      );
+        roadmap.modules = await Promise.all(
+            roadmap.modules.map(async (module) => {
+                let video = null;
+                try {
+                    video = await searchVideo(module.title);
+                } catch (err) {
+                    console.log(err.message);
+                }
+                return {
+                    ...module,
+                    youtube: video?.url || "",
+                    article: docsMap.get(module.title.toLowerCase()) || "",
+                };
+            })
+        );
 
-    });
-
-    roadmap.modules = await Promise.all(
-
-      roadmap.modules.map(async (module) => {
-
-        let video = null;
-
-        try {
-
-          video = await searchVideo(module.title);
-
-        } catch (err) {
-
-          console.log(err.message);
-
-        }
-
-        return {
-
-          ...module,
-
-          youtube: video?.url || "",
-
-          article:
-            docsMap.get(module.title.toLowerCase()) || "",
-
-        };
-
-      })
-
-    );
-
-     return {
-
-      ...state,
-
-      roadmap,
-
-    };
+        return { ...state, roadmap };
 
     } catch (error) {
- console.log(error);
-
-    return state;
+        console.log("Resource Agent Error", error);
+        return state;
     }
 }
 

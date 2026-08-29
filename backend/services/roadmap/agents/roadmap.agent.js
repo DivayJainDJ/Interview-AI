@@ -1,7 +1,7 @@
 import { HumanMessage, SystemMessage } from "@langchain/core/messages";
 import llm from "../configs/llm.js";
 import roadmapPrompt from "../configs/roadmap.prompt.js";
-
+import { cleanJson } from "../../../shared/utils/cleanJson.js";
 
 const roadmapAgent = async (state) => {
     try {
@@ -32,38 +32,23 @@ ${JSON.stringify(resume, null, 2)}
 `)
         ]);
 
-        const roadmap = JSON.parse(response.content
-            .replace(/<think>[\s\S]*?<\/think>/gi, "")
-            .replace(/```json/g, "")
-            .replace(/```/g, "")
-            .trim())
+        const roadmap = JSON.parse(cleanJson(response.content));
 
-             const capitalize = (value = "") =>
-      value.charAt(0).toUpperCase() +
-      value.slice(1).toLowerCase();
+        const capitalize = (value = "") =>
+            value.charAt(0).toUpperCase() + value.slice(1).toLowerCase();
 
-    roadmap.level = capitalize(roadmap.level);
+        roadmap.level = capitalize(roadmap.level);
+        roadmap.modules = (roadmap.modules || []).map((module) => ({
+            ...module,
+            difficulty: capitalize(module.difficulty),
+        }));
 
-    roadmap.modules = (roadmap.modules || []).map((module) => ({
-      ...module,
-      difficulty: capitalize(module.difficulty),
-    }));
-
-    return {
-        ...state,
-        roadmap
-    }
-
-
-
+        return { ...state, roadmap };
 
     } catch (error) {
-console.log("Roadmap Agent Error");
-    console.log(error);
-
-    throw error;
+        console.log("Roadmap Agent Error", error);
+        throw error;
     }
 }
-
 
 export default roadmapAgent

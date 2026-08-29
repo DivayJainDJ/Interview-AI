@@ -1,29 +1,14 @@
 import llm from "../config/llm.js";
 import feedbackPrompt from "../prompts/feedbackPrompt.js";
-
-
-
-
+import { cleanJson } from "../../../shared/utils/cleanJson.js";
 
 export const feedbackAgent = async (data) => {
-
     try {
         const prompt = feedbackPrompt(data)
-
         const response = await llm.invoke(prompt)
-
-        const cleaned = response.content
-        .replace(/<think>[\s\S]*?<\/think>/gi, "")
-        .replace(/```json/g, "")
-        .replace(/```/g, "")
-        .trim();
-
-        return JSON.parse(cleaned)
+        return JSON.parse(cleanJson(response.content))
     } catch (error) {
-        console.log("Feedback Agent Parse Error");
-        console.log(error);
-
+        console.log("Feedback Agent Parse Error", error);
         throw new Error("Failed to generate feedback");
-        
     }
 }

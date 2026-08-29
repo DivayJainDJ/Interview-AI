@@ -1,13 +1,13 @@
-
 import { ChatGroq } from "@langchain/groq"
 import dotenv from "dotenv"
 dotenv.config()
 
 const llm = new ChatGroq({
-    model: process.env.GROQ_MODEL || "llama-3.3-70b-versatile",
+    model: process.env.GROQ_MODEL || "qwen/qwen3.8-27b",
     temperature: 0.2,
     maxTokens: 4000,
     maxRetries: 2,
+    reasoning_effort: "none",
 })
 
 export default llm

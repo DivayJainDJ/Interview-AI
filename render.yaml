@@ -35,7 +35,7 @@ services:
       - key: FRONTEND_URL
         value: https://frontend-git-main-divayjain1208-gmailcoms-projects.vercel.app,https://frontend-fzo61o0bi-divayjain1208-gmailcoms-projects.vercel.app
       - key: GROQ_MODEL
-        value: llama-3.3-70b-versatile
+        value: qwen/qwen3.8-27b
       - fromGroup: fresherai-backend
       - key: AUTH_SERVICE_URL
         fromService:
@@ -84,7 +84,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: GROQ_MODEL
-        value: llama-3.3-70b-versatile
+        value: qwen/qwen3.8-27b
       - fromGroup: fresherai-backend
 
   - type: web
@@ -97,7 +97,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: GROQ_MODEL
-        value: llama-3.3-70b-versatile
+        value: qwen/qwen3.8-27b
       - fromGroup: fresherai-backend
 
   - type: web
@@ -110,7 +110,7 @@ services:
       - key: NODE_ENV
         value: production
       - key: GROQ_MODEL
-        value: llama-3.3-70b-versatile
+        value: qwen/qwen3.8-27b
       - fromGroup: fresherai-backend
 
   - type: web
