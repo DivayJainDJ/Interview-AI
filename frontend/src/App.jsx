@@ -2,9 +2,7 @@ import { Routes , Route, Navigate } from 'react-router-dom'
 import Home from './pages/Home'
 import Dashboard from './pages/Dashboard'
 import { useEffect, useState } from 'react'
-import { getCurrentUser, loginWithFirebaseToken } from './apis/user.api'
-import { auth } from './utils/firebase'
-import { signOut } from 'firebase/auth'
+import { getCurrentUser } from './apis/user.api'
 import Scorer from './pages/Scorer'
 import { getResume } from './apis/resume.api'
 import { useDispatch } from 'react-redux'
@@ -25,23 +23,13 @@ function App() {
   useEffect(()=>{
 
     const getUser = async () => {
-      let data = await getCurrentUser()
-
-      if (!data?.user && auth.currentUser) {
-        try {
-          const token = await auth.currentUser.getIdToken()
-          data = await loginWithFirebaseToken(token)
-        } catch {
-          await signOut(auth).catch(() => {})
-        }
-      }
+      const data = await getCurrentUser()
 
       setUser(data?.user)
       if (!data?.user) {
         if (typeof window !== "undefined") {
           window.localStorage.removeItem("sessionId")
         }
-        await signOut(auth).catch(() => {})
       }
       setLoading(false)
     }

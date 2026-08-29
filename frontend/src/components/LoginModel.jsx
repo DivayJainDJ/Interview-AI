@@ -1,13 +1,14 @@
 import { FiX } from "react-icons/fi";
 import { motion } from "motion/react"
 import { FcGoogle } from "react-icons/fc";
-import { signInWithPopup, signOut } from 'firebase/auth';
+import { signInWithPopup } from 'firebase/auth';
 import { auth, provider } from '../utils/firebase';
 import { loginWithFirebaseToken } from "../apis/user.api";
 function LoginModel({ onClose ,setUser}) {
 
     const handleGoogleAuth = async () => {
         try {
+            provider.setCustomParameters({ prompt: "select_account" })
             const result = await signInWithPopup(auth , provider)
             const token = await result.user.getIdToken()
 
@@ -17,7 +18,9 @@ function LoginModel({ onClose ,setUser}) {
             onClose()
         } catch (error) {
             console.log(error)
-            await signOut(auth)
+            alert(error?.code === "auth/unauthorized-domain"
+                ? "Google sign-in is not allowed on this domain yet. Add this frontend domain to Firebase Authorized Domains."
+                : error?.message || "Google sign-in failed. Please try again.")
         }
     }
 
