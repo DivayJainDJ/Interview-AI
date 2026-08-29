@@ -15,8 +15,8 @@ export const proxyWithHeaders = (serviceUrl, routePrefix) => {
     return createProxyMiddleware({
         target,
         changeOrigin: true,
-        proxyTimeout: 120000,
-        timeout: 120000,
+        proxyTimeout: 300000,
+        timeout: 300000,
         pathRewrite: (path) => {
             const rewrittenPath = path.replace(routeRegex, "");
             return rewrittenPath || "/";

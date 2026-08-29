@@ -58,6 +58,27 @@ app.get("/", (_req, res) => {
     res.send("Hello from Gateway")
 })
 
+// Wake up all downstream services (Render free tier spins down inactive services)
+const warmupServices = async () => {
+    const services = [
+        process.env.AUTH_SERVICE_URL,
+        process.env.RESUME_SERVICE_URL,
+        process.env.INTERVIEW_SERVICE_URL,
+        process.env.ROADMAP_SERVICE_URL,
+        process.env.BILLING_SERVICE_URL,
+    ].filter(Boolean);
+
+    for (const url of services) {
+        fetch(`${url}/health`, { signal: AbortSignal.timeout(10000) })
+            .then(() => console.log(`Warmed up: ${url}`))
+            .catch(() => {});
+    }
+};
+
+// Ping services every 10 minutes to keep them warm
+warmupServices();
+setInterval(warmupServices, 10 * 60 * 1000);
+
 app.use("/api/auth", proxyWithHeaders(process.env.AUTH_SERVICE_URL, "/api/auth"))
 app.use("/api/resume", isAuth, proxyWithHeaders(process.env.RESUME_SERVICE_URL, "/api/resume"))
 app.use("/api/interview", isAuth, proxyWithHeaders(process.env.INTERVIEW_SERVICE_URL, "/api/interview"))
