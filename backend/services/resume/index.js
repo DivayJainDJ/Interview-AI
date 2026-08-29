@@ -45,17 +45,6 @@ app.use(cors({
     credentials: true,
 }));
 
-app.options("*", cors({
-    origin(origin, callback) {
-        if (allowedOrigins.length === 0 || isAllowedOrigin(origin)) {
-            return callback(null, true);
-        }
-
-        return callback(new Error(`Origin ${origin} not allowed by CORS`));
-    },
-    credentials: true,
-}));
-
 
 const PORT = process.env.PORT || 6002
 
