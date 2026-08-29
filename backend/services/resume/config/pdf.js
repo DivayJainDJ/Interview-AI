@@ -1,5 +1,7 @@
 import fs from "fs";
-import pdfParse from "pdf-parse";
+import * as pdfParseModule from "pdf-parse";
+
+const pdfParse = pdfParseModule.default ?? pdfParseModule;
 
 const extractText = async (filePath) => {
     const buffer = fs.readFileSync(filePath);
