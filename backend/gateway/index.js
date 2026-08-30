@@ -9,6 +9,29 @@ import { isAuth } from "./middleware/isAuth.js"
 import { proxyWithHeaders } from "./utils/proxyWithHeaders.js"
 
 const app = express()
+app.use((req, res, next) => {
+    console.log("GATEWAY REQUEST:", {
+        method: req.method,
+        path: req.path,
+        origin: req.headers.origin,
+        cookie: Boolean(req.headers.cookie),
+        sessionHeader: Boolean(req.headers["x-session-id"]),
+    });
+
+    const originalSend = res.send;
+
+    res.send = function (body) {
+        console.log("GATEWAY RESPONSE:", {
+            method: req.method,
+            path: req.path,
+            status: res.statusCode,
+        });
+
+        return originalSend.call(this, body);
+    };
+
+    next();
+});
 app.set("trust proxy", 1)
 app.use(express.json())
 
