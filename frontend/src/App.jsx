@@ -38,15 +38,18 @@ function App() {
 
   },[])
 
-  useEffect(()=>{
-
-    const getResumeData = async()=>{
+  useEffect(()=>{    const getResumeData = async()=>{
       if (!user) {
         dispatch(setResume(null))
         return
       }
-      const result = await getResume()
-      dispatch(setResume(result?.data))
+      try {
+        const result = await getResume()
+        dispatch(setResume(result?.data))
+      } catch {
+        // Resume fetch failed - not critical, will retry on demand
+      }
+
     }
 
     getResumeData()
