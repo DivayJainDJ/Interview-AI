@@ -1,6 +1,6 @@
 const clients = new Map();
 
-export const rateLimiter = (maxRequests = 10, windowMs = 60_000) => {
+export const rateLimiter = (maxRequests = 30, windowMs = 60_000) => {
     return (req, res, next) => {
         const key = req.headers["x-user-id"] || req.ip || "anonymous";
         const now = Date.now();
@@ -24,6 +24,7 @@ export const rateLimiter = (maxRequests = 10, windowMs = 60_000) => {
             const retryAfter = Math.ceil((client.resetAt - now) / 1000);
             res.setHeader("Retry-After", retryAfter);
             return res.status(429).json({
+                success: false,
                 message: `Too many requests. Please retry in ${retryAfter}s.`,
             });
         }
