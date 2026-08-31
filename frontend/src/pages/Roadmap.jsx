@@ -13,7 +13,7 @@ function Roadmap({ setUser }) {
     const [historyOpen, setHistoryOpen] = useState(false);
     const [roadmap, setRoadmap] = useState(null);
     const [role, setRole] = useState("");
-    const [targetPackage, setTargetPackage] = useState(PACKAGE_OPTIONS[2]); "20 LPA"
+    const [targetPackage, setTargetPackage] = useState(PACKAGE_OPTIONS[2]); // default "20 LPA"
     const [packageOpen, setPackageOpen] = useState(false);
     const [useResume, setUseResume] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -84,6 +84,7 @@ function Roadmap({ setUser }) {
             })
             setRoadmap(response.data.data)
             await getAllRoadmaps()
+
         } catch (error) {
             console.error("Failed to generate roadmap:", error);
             const status = error?.response?.status;
@@ -95,8 +96,6 @@ function Roadmap({ setUser }) {
             }
         } finally {
             setLoading(false)
-        }
-
         }
     }
 
