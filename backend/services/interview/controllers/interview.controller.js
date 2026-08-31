@@ -83,7 +83,7 @@ export const startInterview = async (req, res) => {
 export const submitAnswer = async (req, res) => {
     try {
         const userId = req.headers["x-user-id"]
-        console.log("GET ALL INTERVIEWS - userId:", userId)
+
         const { interviewId, answer } = req.body
 
         if (!interviewId || !answer) {
@@ -267,7 +267,7 @@ export const getAllInterviews = async (req, res) => {
         const cache = await redis.get(`interviews:${userId}`)
 
         if (cache) {
-            console.log("✅ Data served from Redis")
+
             return res.status(200).json(JSON.parse(cache))
         }
 

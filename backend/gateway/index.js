@@ -8,80 +8,60 @@ import { getCurrentUser } from "./controllers/user.controller.js"
 import { isAuth } from "./middleware/isAuth.js"
 import { proxyWithHeaders } from "./utils/proxyWithHeaders.js"
 
+process.on("unhandledRejection", (reason) => {
+    console.error("Unhandled Rejection:", reason)
+})
+process.on("uncaughtException", (error) => {
+    console.error("Uncaught Exception:", error)
+})
+
 const app = express()
-app.use((req, res, next) => {
-    console.log("GATEWAY REQUEST:", {
-        method: req.method,
-        path: req.path,
-        origin: req.headers.origin,
-        cookie: Boolean(req.headers.cookie),
-        sessionHeader: Boolean(req.headers["x-session-id"]),
-    });
 
-    const originalSend = res.send;
-
-    res.send = function (body) {
-        console.log("GATEWAY RESPONSE:", {
-            method: req.method,
-            path: req.path,
-            status: res.statusCode,
-        });
-
-        return originalSend.call(this, body);
-    };
-
-    next();
-});
+app.use(morgan(process.env.NODE_ENV === "production" ? "combined" : "dev"))
 app.set("trust proxy", 1)
-app.use(express.json())
+app.use(express.json({ limit: "5mb" }))
+app.use(cookieParser())
 
 const allowedOrigins = (process.env.FRONTEND_URL || "")
     .split(",")
     .map((origin) => origin.trim())
-    .filter(Boolean);
+    .filter(Boolean)
 
 const isAllowedOrigin = (origin) => {
-    if (!origin) {
-        return true
-    }
-
-    if (allowedOrigins.includes(origin)) {
-        return true
-    }
-
+    if (!origin) return true
+    if (allowedOrigins.includes(origin)) return true
     try {
         const { hostname } = new URL(origin)
-        return hostname === "localhost" ||
+        return (
+            hostname === "localhost" ||
             hostname === "127.0.0.1" ||
             hostname.endsWith(".vercel.app")
+        )
     } catch {
         return false
     }
 }
 
-app.use(cors({
-    origin(origin, callback) {
-        if (allowedOrigins.length === 0 || isAllowedOrigin(origin)) {
-            return callback(null, true)
-        }
-
-        return callback(new Error(`Origin ${origin} not allowed by CORS`))
-    },
-    credentials: true
-}))
-
-app.use(morgan("dev"))
-app.use(cookieParser())
+app.use(
+    cors({
+        origin(origin, callback) {
+            if (allowedOrigins.length === 0 || isAllowedOrigin(origin)) {
+                return callback(null, true)
+            }
+            return callback(new Error(`Origin ${origin} not allowed by CORS`))
+        },
+        credentials: true,
+    })
+)
 
 app.get("/health", (_req, res) => {
-    res.json({ status: "ok", service: "gateway" })
+    res.json({ status: "ok", service: "gateway", uptime: process.uptime() })
 })
 
 app.get("/", (_req, res) => {
     res.send("Hello from Gateway")
 })
 
-// Wake up all downstream services once on startup (Render free tier cold starts)
 setTimeout(() => {
     const services = [
         process.env.AUTH_SERVICE_URL,
@@ -89,14 +69,34 @@ setTimeout(() => {
         process.env.INTERVIEW_SERVICE_URL,
         process.env.ROADMAP_SERVICE_URL,
         process.env.BILLING_SERVICE_URL,
-    ].filter(Boolean);
+    ].filter(Boolean)
 
     for (const url of services) {
         fetch(`${url}/health`, { signal: AbortSignal.timeout(15000) })
             .then(() => console.log(`Warmed: ${url}`))
-            .catch(() => {});
+            .catch(() => {})
     }
-}, 3000);
+}, 3000)
+
+app.use((req, res, next) => {
+    const timeout = req.path.includes("/generate") || req.path.includes("/upload")
+        ? 180_000
+        : 60_000
+
+    req.setTimeout(timeout, () => {
+        if (!res.headersSent) {
+            res.status(504).json({ message: "Request timed out" })
+        }
+    })
+
+    res.setTimeout(timeout, () => {
+        if (!res.headersSent) {
+            res.status(504).json({ message: "Response timed out" })
+        }
+    })
+
+    next()
+})
 
 app.use("/api/auth", proxyWithHeaders(process.env.AUTH_SERVICE_URL, "/api/auth"))
 app.use("/api/resume", isAuth, proxyWithHeaders(process.env.RESUME_SERVICE_URL, "/api/resume"))
@@ -106,13 +106,34 @@ app.use("/api/billing/verify", proxyWithHeaders(process.env.BILLING_SERVICE_URL,
 app.use("/api/billing", isAuth, proxyWithHeaders(process.env.BILLING_SERVICE_URL, "/api/billing"))
 app.get("/api/me", isAuth, getCurrentUser)
 
-app.use((error, req, res, next) => {
-    console.error("gateway error", error)
-    return res.status(500).json({ message: error.message })
+app.use((_req, res) => {
+    res.status(404).json({ message: "Not found" })
 })
 
-const PORT = process.env.PORT || 8000;
+app.use((error, req, res, _next) => {
+    console.error("gateway error", error)
+    const origin = req.headers.origin
+    if (origin && isAllowedOrigin(origin)) {
+        res.setHeader("Access-Control-Allow-Origin", origin)
+        res.setHeader("Access-Control-Allow-Credentials", "true")
+    }
+    if (!res.headersSent) {
+        return res.status(500).json({ message: error.message || "Internal server error" })
+    }
+})
 
-app.listen(PORT, "0.0.0.0", () => {
-    console.log(`Gateway Started on ${PORT}`);
-});
+const server = app.listen(process.env.PORT || 8000, "0.0.0.0", () => {
+    console.log(`Gateway Started on ${process.env.PORT || 8000}`)
+})
+
+const shutdown = (signal) => {
+    console.log(`\n${signal} received – shutting down gateway gracefully`)
+    server.close(() => {
+        console.log("Gateway HTTP server closed")
+        process.exit(0)
+    })
+    setTimeout(() => process.exit(1), 10_000)
+}
+
+process.on("SIGTERM", () => shutdown("SIGTERM"))
+process.on("SIGINT", () => shutdown("SIGINT"))

@@ -26,9 +26,21 @@ const startServer = async () => {
     try {
         await connectDB();
 
-        app.listen(PORT, "0.0.0.0", () => {
+        const server = app.listen(PORT, "0.0.0.0", () => {
             console.log(`Billing-service Started on ${PORT}`);
         });
+
+        // Graceful shutdown
+        const shutdown = (signal) => {
+            console.log(`\n${signal} received – shutting down billing service gracefully`);
+            server.close(() => {
+                console.log("Billing HTTP server closed");
+                process.exit(0);
+            });
+            setTimeout(() => process.exit(1), 10_000);
+        };
+        process.on("SIGTERM", () => shutdown("SIGTERM"));
+        process.on("SIGINT", () => shutdown("SIGINT"));
     } catch (error) {
         console.error("Failed to start Billing service:", error);
         process.exit(1);

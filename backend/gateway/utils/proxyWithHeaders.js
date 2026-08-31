@@ -15,8 +15,9 @@ export const proxyWithHeaders = (serviceUrl, routePrefix) => {
     return createProxyMiddleware({
         target,
         changeOrigin: true,
-        proxyTimeout: 300000,
-        timeout: 300000,
+        proxyTimeout: 180_000,
+        timeout: 180_000,
+        selfHandleResponse: false,
         pathRewrite: (path) => {
             const rewrittenPath = path.replace(routeRegex, "");
             return rewrittenPath || "/";
@@ -24,32 +25,40 @@ export const proxyWithHeaders = (serviceUrl, routePrefix) => {
         on: {
             proxyReq: (proxyReq, req) => {
                 if (req.user?.userId) {
-                  proxyReq.setHeader("x-user-id", req.user.userId);
+                    proxyReq.setHeader("x-user-id", req.user.userId);
                 }
-              
+
                 const sessionId =
-                  req.cookies?.session ||
-                  req.headers["x-session-id"];
-              
+                    req.cookies?.session ||
+                    req.headers["x-session-id"];
+
                 if (sessionId) {
-                  proxyReq.setHeader("x-session-id", sessionId);
+                    proxyReq.setHeader("x-session-id", sessionId);
                 }
-              
+
                 fixRequestBody(proxyReq, req);
-              },
+            },
             error: (error, req, res) => {
                 console.error(`proxy error [${routePrefix}] -> ${target}`, error.message);
 
                 if (!res.headersSent) {
-                    // Manually set CORS headers so the browser can read the error
                     const origin = req.headers.origin;
                     if (origin) {
                         res.setHeader("Access-Control-Allow-Origin", origin);
                         res.setHeader("Access-Control-Allow-Credentials", "true");
                     }
-                    res.status(502).json({
-                        message: `Service unavailable for ${routePrefix}. Please try again in a moment.`,
-                    });
+
+                    const isTimeout =
+                        error.code === "ECONNABORTED" ||
+                        error.message?.includes("timeout") ||
+                        error.message?.includes("ETIMEDOUT");
+
+                    const status = isTimeout ? 504 : 502;
+                    const message = isTimeout
+                        ? `Service timeout for ${routePrefix}. The request took too long – please try again.`
+                        : `Service unavailable for ${routePrefix}. Please try again in a moment.`;
+
+                    res.status(status).json({ message });
                 }
             },
         },

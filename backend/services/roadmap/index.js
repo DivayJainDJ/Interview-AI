@@ -21,9 +21,21 @@ const startServer = async () => {
     try {
         await connectDB();
 
-        app.listen(PORT, "0.0.0.0", () => {
+        const server = app.listen(PORT, "0.0.0.0", () => {
             console.log(`Roadmap-service Started on ${PORT}`);
         });
+
+        // Graceful shutdown
+        const shutdown = (signal) => {
+            console.log(`\n${signal} received – shutting down roadmap service gracefully`);
+            server.close(() => {
+                console.log("Roadmap HTTP server closed");
+                process.exit(0);
+            });
+            setTimeout(() => process.exit(1), 10_000);
+        };
+        process.on("SIGTERM", () => shutdown("SIGTERM"));
+        process.on("SIGINT", () => shutdown("SIGINT"));
     } catch (error) {
         console.error("Failed to start Roadmap service:", error);
         process.exit(1);

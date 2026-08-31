@@ -4,6 +4,12 @@ services:
     ports:
       - "6379:6379"
     restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    command: redis-server --maxmemory 256mb --maxmemory-policy allkeys-lru
 
   gateway:
     build:
@@ -14,13 +20,23 @@ services:
     env_file:
       - gateway/.env
     depends_on:
-      - redis
-      - auth
-      - resume
-      - interview
-      - roadmap
-      - billing
+      redis:
+        condition: service_healthy
+      auth:
+        condition: service_started
+      resume:
+        condition: service_started
+      interview:
+        condition: service_started
+      roadmap:
+        condition: service_started
+      billing:
+        condition: service_started
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   auth:
     build:
@@ -31,8 +47,13 @@ services:
     env_file:
       - services/auth/.env
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   resume:
     build:
@@ -43,8 +64,13 @@ services:
     env_file:
       - services/resume/.env
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   interview:
     build:
@@ -55,8 +81,13 @@ services:
     env_file:
       - services/interview/.env
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   roadmap:
     build:
@@ -67,8 +98,13 @@ services:
     env_file:
       - services/roadmap/.env
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 512M
 
   billing:
     build:
@@ -79,5 +115,10 @@ services:
     env_file:
       - services/billing/.env
     depends_on:
-      - redis
+      redis:
+        condition: service_healthy
     restart: unless-stopped
+    deploy:
+      resources:
+        limits:
+          memory: 256M

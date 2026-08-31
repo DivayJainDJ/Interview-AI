@@ -3,24 +3,8 @@ import api from "../utils/axios"
 import { auth } from "../utils/firebase"
 import { signOut } from "firebase/auth"
 
-const authApi = axios.create({
-    baseURL: import.meta.env.VITE_AUTH_URL || "https://interview-ai-auth.onrender.com",
-    withCredentials: true
-})
-
-authApi.interceptors.request.use((config) => {
-    if (typeof window !== "undefined") {
-        const sessionId = window.localStorage.getItem("sessionId")
-        if (sessionId) {
-            config.headers["x-session-id"] = sessionId
-        }
-    }
-
-    return config
-})
-
 export const loginWithFirebaseToken = async (token) => {
-    const response = await authApi.post("/login", { token })
+    const response = await api.post("/api/auth/login", { token })
     const sessionId = response?.data?.sessionId
 
     if (sessionId && typeof window !== "undefined") {
@@ -32,7 +16,7 @@ export const loginWithFirebaseToken = async (token) => {
 
 export const logoutUser = async () => {
     try {
-        await authApi.get("/logout")
+        await api.get("/api/auth/logout")
     } finally {
         if (typeof window !== "undefined") {
             window.localStorage.removeItem("sessionId")
@@ -53,7 +37,7 @@ export const getCurrentUser = async () => {
 
 export const spendCoins = async (data) => {
     try {
-        const response = await authApi.post("/use-coins", data)
+        const response = await api.post("/api/auth/use-coins", data)
         return response.data
     } catch (error) {
         throw error

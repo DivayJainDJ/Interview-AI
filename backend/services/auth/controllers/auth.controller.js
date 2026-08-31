@@ -52,10 +52,10 @@ const saveSession = async (sessionId, user) => {
 export const login = async (req, res) => {
   try {
     const { token } = req.body;
-    console.log("auth login hit", { hasToken: Boolean(token) });
+
 
     const decoded = await getAuth(app).verifyIdToken(token);
-    console.log("firebase token verified", { uid: decoded.uid });
+
 
     let user = await User.findOne({
       firebaseUid: decoded.uid,
@@ -87,7 +87,7 @@ export const login = async (req, res) => {
 
     return res.json({ success: true, user, sessionId });
   } catch (error) {
-    console.log("auth login failed", error);
+    console.error("auth login failed", error);
     return res.status(401).json({ message: error.message });
   }
 };

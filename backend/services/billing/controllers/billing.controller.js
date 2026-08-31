@@ -13,9 +13,7 @@ const PLANS = {
 
 export const createOrder = async (req, res) => {
     try {
-      console.log("BILLING: createOrder called")
-      console.log("BILLING: userId =", req.headers["x-user-id"])
-      console.log("BILLING: planId =", req.body?.planId)
+
 
         const { planId } = req.body
         const userId = req.headers["x-user-id"]
@@ -35,13 +33,13 @@ export const createOrder = async (req, res) => {
             });
         }
 
-        console.log("BILLING: creating Razorpay order")
+
         const order = await razorpay.orders.create({
             amount: plan.amount * 100,
             currency: "INR",
             receipt: `receipt_${Date.now()}`,
         })
-        console.log("BILLING: Razorpay order created:", order.id)
+
         await Billing.create({
             userId,
             amount: plan.amount,

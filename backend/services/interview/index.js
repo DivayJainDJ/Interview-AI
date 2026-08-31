@@ -28,9 +28,21 @@ const startServer = async () => {
     try {
         await connectDB();
 
-        app.listen(PORT, "0.0.0.0", () => {
+        const server = app.listen(PORT, "0.0.0.0", () => {
             console.log(`Interview-service Started on ${PORT}`);
         });
+
+        // Graceful shutdown
+        const shutdown = (signal) => {
+            console.log(`\n${signal} received – shutting down interview service gracefully`);
+            server.close(() => {
+                console.log("Interview HTTP server closed");
+                process.exit(0);
+            });
+            setTimeout(() => process.exit(1), 10_000);
+        };
+        process.on("SIGTERM", () => shutdown("SIGTERM"));
+        process.on("SIGINT", () => shutdown("SIGINT"));
     } catch (error) {
         console.error("Failed to start Interview service:", error);
         process.exit(1);
