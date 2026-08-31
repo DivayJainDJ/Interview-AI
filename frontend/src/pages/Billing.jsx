@@ -38,21 +38,31 @@ const plan = [
 ];
 function Billing({ user, setUser }) {
     const [showMenu, setShowMenu] = useState(false)
+    const [paying, setPaying] = useState(false)
 
     const navigate = useNavigate()
     const handlePayment = async (plan) => {
-        if (plan.disabled) return;
+        if (plan.disabled || paying) return;
+
+        setPaying(true);
         try {
             const result = await api.post("/api/billing/create",
                 { planId: plan.title.toLowerCase() })
 
+            const order = result?.data?.order;
+            if (!order?.id || !order?.amount) {
+                alert("Failed to create payment order. Please try again.");
+                setPaying(false);
+                return;
+            }
+
             const options = {
                 key: import.meta.env.VITE_RAZORPAY_KEY_ID,
-                amount: result.data.order.amount,
-                currency: result.data.order.currency,
+                amount: order.amount,
+                currency: order.currency,
                 name: "FresherAI",
                 description: `${plan.title} - ${plan.coins} Interview Coins`,
-                order_id: result.data.order.id,
+                order_id: order.id,
 
                 handler: async function (response) {
                     try {
@@ -68,30 +78,35 @@ function Billing({ user, setUser }) {
                         navigate("/dashboard")
 
                     } catch (error) {
-                        console.log(error);
-
-                        alert(
-                            error?.response?.data?.message ||
-                            "Payment verification failed"
-                        );
+                        const msg = error?.response?.data?.message
+                            || error?.message
+                            || "Payment verification failed";
+                        alert(msg);
                     }
-
                 },
 
+                modal: {
+                    ondismiss: function () {
+                        setPaying(false);
+                    }
+                },
 
                 theme: {
                     color: "#000000",
                 },
-
             }
-
 
             const razorpay = new window.Razorpay(options);
             razorpay.open()
-
+            setPaying(false);
 
         } catch (error) {
-            console.log(error)
+            console.error("Payment error:", error);
+            const msg = error?.response?.data?.message
+                || error?.message
+                || "Failed to start payment. Please try again.";
+            alert(msg);
+            setPaying(false);
         }
     }
     return (
