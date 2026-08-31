@@ -13,7 +13,7 @@ function Roadmap({ setUser }) {
     const [historyOpen, setHistoryOpen] = useState(false);
     const [roadmap, setRoadmap] = useState(null);
     const [role, setRole] = useState("");
-    const [targetPackage, setTargetPackage] = useState(PACKAGE_OPTIONS[2]); // default "20 LPA"
+    const [targetPackage, setTargetPackage] = useState(PACKAGE_OPTIONS[2]); "20 LPA"
     const [packageOpen, setPackageOpen] = useState(false);
     const [useResume, setUseResume] = useState(false);
     const [loading, setLoading] = useState(false);
@@ -38,7 +38,8 @@ function Roadmap({ setUser }) {
         }
 
     useEffect(() => {
-        getAllRoadmaps()
+        const timer = setTimeout(() => getAllRoadmaps(), 1000)
+        return () => clearTimeout(timer)
     }, [])
 
 
@@ -83,12 +84,18 @@ function Roadmap({ setUser }) {
             })
             setRoadmap(response.data.data)
             await getAllRoadmaps()
-            setLoading(false)
-
         } catch (error) {
             console.error("Failed to generate roadmap:", error);
-            setError("Something went wrong while generating your roadmap. Please try again.");
+            const status = error?.response?.status;
+            const msg = error?.response?.data?.message || error?.message;
+            if (status === 429) {
+                setError("Too many requests. Please wait a moment and try again.");
+            } else {
+                setError(msg || "Something went wrong while generating your roadmap. Please try again.");
+            }
+        } finally {
             setLoading(false)
+        }
 
         }
     }
