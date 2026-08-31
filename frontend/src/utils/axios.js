@@ -10,41 +10,42 @@ const getStoredSessionId = () => {
 
 const api = axios.create({
     baseURL: import.meta.env.VITE_BACKEND_URL || "https://interview-ai-backend-new.onrender.com",
-    withCredentials:true
+    withCredentials: true
 })
+
+const pendingRequests = new Map()
 
 api.interceptors.request.use((config) => {
     const sessionId = getStoredSessionId()
-
     if (sessionId) {
         config.headers["x-session-id"] = sessionId
     }
 
-    config.metadata = config.metadata || {}
-    config.metadata.retryCount = config.metadata.retryCount || 0
+    if (config.method === "get") {
+        const key = config.url
+        if (pendingRequests.has(key)) {
+            return Promise.reject({ __deduped: true, config })
+        }
+        pendingRequests.set(key, true)
+    }
 
     return config
 })
 
 api.interceptors.response.use(
-    (response) => response,
-    async (error) => {
-        const config = error.config
-
-        if (!config || config.metadata?.retryCount >= 1) {
-            return Promise.reject(error)
+    (response) => {
+        if (response.config.method === "get") {
+            pendingRequests.delete(response.config.url)
+        }
+        return response
+    },
+    (error) => {
+        if (error.config?.method === "get") {
+            pendingRequests.delete(error.config.url)
         }
 
-        if (error.response?.status === 429) {
-            config.metadata = config.metadata || {}
-            config.metadata.retryCount = (config.metadata.retryCount || 0) + 1
-
-            const retryAfter = parseInt(error.response.headers?.["retry-after"] || "10", 10)
-            const delay = Math.max(retryAfter * 1000, 8000)
-
-            await new Promise((r) => setTimeout(r, delay))
-
-            return api(config)
+        if (error.__deduped) {
+            return Promise.reject(error)
         }
 
         return Promise.reject(error)

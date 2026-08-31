@@ -38,18 +38,20 @@ function App() {
 
   },[])
 
-  useEffect(()=>{    const getResumeData = async()=>{
+  useEffect(()=>{
+
+    const getResumeData = async()=>{
       if (!user) {
         dispatch(setResume(null))
         return
       }
       try {
+        await new Promise(r => setTimeout(r, 500))
         const result = await getResume()
         dispatch(setResume(result?.data))
       } catch {
-        // Resume fetch failed - not critical, will retry on demand
+        // not critical
       }
-
     }
 
     getResumeData()
@@ -74,35 +76,35 @@ function App() {
       }/>
 
     <Route path='/dashboard' element={
-      user ? <Dashboard user={user} setUser={setUser}/> 
+      user ? <Dashboard user={user} setUser={setUser}/>
       : <Navigate to="/" replace/> }/>
 
       <Route path='/scorer' element={
-      user ? <Scorer user={user} setUser={setUser}/> 
+      user ? <Scorer user={user} setUser={setUser}/>
       : <Navigate to="/" replace/> }/>
 
       <Route path='/resume' element={
-      user ? <ResumeBuilder user={user} setUser={setUser}/> 
+      user ? <ResumeBuilder user={user} setUser={setUser}/>
       : <Navigate to="/" replace/> }/>
 
       <Route path='/interview' element={
-      user ? <InterviewStart user={user} setUser={setUser}/> 
+      user ? <InterviewStart user={user} setUser={setUser}/>
       : <Navigate to="/" replace/> }/>
 
       <Route path='/interview/:id' element={
-      user ? <InterviewPage user={user} setUser={setUser}/> 
+      user ? <InterviewPage user={user} setUser={setUser}/>
       : <Navigate to="/" replace/> }/>
 
       <Route path='/interview/:id/report' element={
-      user ? <InterviewReport user={user} setUser={setUser}/> 
+      user ? <InterviewReport user={user} setUser={setUser}/>
       : <Navigate to="/" replace/> }/>
 
       <Route path='/roadmap' element={
-      user ? <Roadmap user={user} setUser={setUser}/> 
+      user ? <Roadmap user={user} setUser={setUser}/>
       : <Navigate to="/" replace/> }/>
 
       <Route path='/billing' element={
-      user ? <Billing user={user} setUser={setUser}/> 
+      user ? <Billing user={user} setUser={setUser}/>
       : <Navigate to="/" replace/> }/>
 
 
